@@ -203,12 +203,19 @@ static int __mmc_init_request(struct mmc_queue *mq, struct request *req,
 {
 	struct mmc_queue_req *mq_rq = req_to_mmc_queue_req(req);
 	struct mmc_host *host;
+	u16 sg_len;
+
 	if (!mq || !mq->card || (mmc_card_removed(mq->card)))
 		return -ENOTBLK;
 
 	host = mq->card->host;
+	sg_len = host->max_segs;
+	if (!sg_len) {
+		dev_err(mmc_dev(host), "Wrong max_segs assigned\n");
+		return -EINVAL;
+	}
 
-	mq_rq->sg = mmc_alloc_sg(host->max_segs, gfp);
+	mq_rq->sg = mmc_alloc_sg(sg_len, gfp);
 	if (!mq_rq->sg)
 		return -ENOMEM;
 
