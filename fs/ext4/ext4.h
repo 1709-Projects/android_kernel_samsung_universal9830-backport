@@ -2973,13 +2973,15 @@ static inline void ext4_isize_set(struct ext4_inode *raw_inode, loff_t i_size)
 	raw_inode->i_size_high = cpu_to_le32(i_size >> 32);
 }
 
+static inline ext4_group_t ext4_get_groups_count(struct super_block *sb);
+
 static inline
 struct ext4_group_info *ext4_get_group_info(struct super_block *sb,
 					    ext4_group_t group)
 {
 	 struct ext4_group_info **grp_info;
 	 long indexv, indexh;
-	 BUG_ON(group >= EXT4_SB(sb)->s_groups_count);
+	 BUG_ON(group >= ext4_get_groups_count(sb));
 	 indexv = group >> (EXT4_DESC_PER_BLOCK_BITS(sb));
 	 indexh = group & ((EXT4_DESC_PER_BLOCK(sb)) - 1);
 	 grp_info = sbi_array_rcu_deref(EXT4_SB(sb), s_group_info, indexv);
