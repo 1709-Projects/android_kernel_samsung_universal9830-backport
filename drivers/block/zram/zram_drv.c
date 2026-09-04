@@ -495,6 +495,9 @@ static ssize_t writeback_limit_enable_store(struct device *dev,
 	if (kstrtoull(buf, 10, &val))
 		return ret;
 
+	/* Keep the limit page-size aligned to avoid wrapping below zero. */
+	val = rounddown(val, PAGE_SIZE / 4096);
+
 	down_read(&zram->init_lock);
 	spin_lock(&zram->wb_limit_lock);
 	zram->wb_limit_enable = val;
