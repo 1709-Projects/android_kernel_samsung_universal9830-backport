@@ -110,7 +110,7 @@ static void em_text_destroy(struct tcf_ematch *m)
 static int em_text_dump(struct sk_buff *skb, struct tcf_ematch *m)
 {
 	struct text_match *tm = EM_TEXT_PRIV(m);
-	struct tcf_em_text conf;
+	struct tcf_em_text conf = {};
 
 	strncpy(conf.algo, tm->config->ops->name, sizeof(conf.algo) - 1);
 	conf.from_offset = tm->from_offset;
