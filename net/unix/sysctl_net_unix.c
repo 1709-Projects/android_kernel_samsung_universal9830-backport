@@ -10,10 +10,14 @@
  */
 
 #include <linux/mm.h>
+#include <linux/limits.h>
 #include <linux/slab.h>
 #include <linux/sysctl.h>
 
 #include <net/af_unix.h>
+
+static int unix_max_dgram_qlen_min;
+static int unix_max_dgram_qlen_max = INT_MAX;
 
 static struct ctl_table unix_table[] = {
 	{
@@ -21,7 +25,9 @@ static struct ctl_table unix_table[] = {
 		.data		= &init_net.unx.sysctl_max_dgram_qlen,
 		.maxlen		= sizeof(int),
 		.mode		= 0644,
-		.proc_handler	= proc_dointvec
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &unix_max_dgram_qlen_min,
+		.extra2		= &unix_max_dgram_qlen_max,
 	},
 	{ }
 };
