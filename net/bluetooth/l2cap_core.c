@@ -4085,8 +4085,10 @@ static int l2cap_connect_create_rsp(struct l2cap_conn *conn,
 
 	l2cap_chan_lock(chan);
 
-	/* Ignore a late response after the channel has left BT_CONNECT. */
-	if (chan->state != BT_CONNECT)
+	/* Only accept a response matching a connection request we sent and
+	 * that is still outstanding.
+	 */
+	if (chan->state != BT_CONNECT || chan->ident != cmd->ident)
 		goto done;
 
 	switch (result) {
