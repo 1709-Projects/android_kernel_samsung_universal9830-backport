@@ -1,141 +1,25 @@
-# Linux 6.18 backport for Exynos 990 (universal9830)
+# 6.18.y backport patches
 
-## Overview
+Fixes are taken from upstream 6.18.y (`v6.18.50` to `v6.18.64`).
+`UPSTREAM:` is a clean cherry-pick, `BACKPORT:` is adapted to 4.19.
 
-- Base tree: Linux 4.19.325 (CIP126/ST10)
-- Branch: `6.18-backport`
-- Fix source: upstream `6.18.y`, range `v6.18.50` to `v6.18.64`
-- `VERSION`, `PATCHLEVEL`, and `SUBLEVEL` remain unchanged: `4.19.325`
-- Release name: `6.18-backport-<codename>`
+## UPSTREAM
 
-The tree stays on the 4.19 kernel base. The `6.18-backport` release name
-identifies it as a tree that carries fixes backported from the 6.18.y
-series.
-
-## Patch conventions
-
-- `UPSTREAM:` marks a clean cherry-pick from 6.18.y.
-- `BACKPORT:` marks a 6.18.y fix adapted to 4.19 APIs.
-- One patch per commit, picked with `git cherry-pick -x`.
-- Adapted commits keep the original `Fixes:` and `(cherry picked from
-  commit ...)` lines and add `Upstream: 6.18.y`.
-
-## Configuration
-
-### Features
-
-`f81be9fa2074` (`defconfig: enable zram writeback, bbr, bfq, kyber`)
-
-- `CONFIG_IOSCHED_BFQ=y`
-- `CONFIG_NET_SCH_FQ=y`
-- `CONFIG_CRYPTO_LZ4=y`
-- `CONFIG_CRYPTO_ZSTD=y`
-
-`CONFIG_ZRAM_WRITEBACK`, `CONFIG_TCP_CONG_BBR`, and
-`CONFIG_MQ_IOSCHED_KYBER` were already enabled in the base config.
-
-`a11f6b86a400` (`defconfig: enable ARMv8 crypto and CAKE/FQ-CoDEL`)
-
-- `CONFIG_CRYPTO_GHASH_ARM64_CE=y`
-- `CONFIG_CRYPTO_AES_ARM64_CE_CCM=y`
-- `CONFIG_CRYPTO_AES_ARM64_NEON_BLK=y`
-- `CONFIG_NET_SCH_CAKE=y`
-- `CONFIG_NET_SCH_FQ_CODEL=y`
-
-### Hardening
-
-`a6e1e6e9e2b9` (`defconfig: enable hardening`)
-
-- `CONFIG_SLAB_FREELIST_RANDOM=y`
-- `CONFIG_SLAB_FREELIST_HARDENED=y`
-
-`FORTIFY_SOURCE` is not enabled because this 4.19 Kconfig tree requires
-`!CC_IS_CLANG`, while the build uses clang.
-
-## Fixes from 6.18.y
-
-### UPSTREAM
-
-| Local commit | 6.18.y commit | Area |
+| Patch | 6.18.y | Description |
 |---|---|---|
-| `dda2a17e11de` | `4be8380e3af0` | `nf_conntrack_sip`: fix OOB read in `sip_skip_whitespace()` |
-| `677e971ecff4` | `71e5619db11d` | Input `evdev`: zero `absinfo` before partial `EVIOCSABS` copy |
-| `a320e6f2e80f` | `0d05b43b55d4` | Input: zero `ff_effect` before compat copy |
-| `74a81e076c2f` | `d63f5a9f8121` | ALSA PCM timer: set `private_data` before registration |
-| `08bd8062e83f` | `7811d8e26c77` | USB gadget `f_fs`: fix NULL dereference in `FUNCTIONFS_ENDPOINT_DESC` |
-| `5308b7df6ee4` | `4fba239be911` | `usb_string_copy`: avoid leaking old data |
-| `d88a3a9742e0` | `a39ecb856514` | `nf_conntrack_expect`: zero at allocation time |
+| [dda2a17](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/dda2a17e11de6dbc7a1e8cf8ab66f19e70c149f8) | [4be8380](https://github.com/gregkh/linux/commit/4be8380e3af008f418f97992c06f23be649a430d) | netfilter: nf_conntrack_sip: fix OOB read in sip_skip_whitespace() |
+| [677e971](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/677e971ecff42290d3dc163c36957d218bf61a39) | [71e5619](https://github.com/gregkh/linux/commit/71e5619db11dd6429101bd967230d0321ec5ea26) | Input: evdev - zero absinfo before partial copy in EVIOCSABS |
+| [a320e6f](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/a320e6f2e80ff130db0591741d901f6fd2b49f25) | [0d05b43](https://github.com/gregkh/linux/commit/0d05b43b55d4784a42ce8fb318175f8ad7d9af5a) | Input: zero ff_effect before compat copy in input_ff_effect_from_user |
+| [74a81e0](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/74a81e076c2fbdc6c58dd6e17d9123e16aa13ae7) | [d63f5a9](https://github.com/gregkh/linux/commit/d63f5a9f8121fb43c798056d7dd34c58f47185d7) | ALSA: pcm: set timer->private_data before registering the PCM timer |
+| [08bd806](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/08bd8062e83f7afaa7d9a67107f2d7415c0b486b) | [7811d8e](https://github.com/gregkh/linux/commit/7811d8e26c77f8eea79e22d0d14c67ec0658b348) | usb: gadget: f_fs: Fix NULL pointer dereference in FUNCTIONFS_ENDPOINT_DESC |
+| [5308b7d](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/5308b7df6ee43538110229646f7d2eddfbbc8134) | [4fba239](https://github.com/gregkh/linux/commit/4fba239be9110b0fb82948e5fb4d17c5ca49b27b) | usb_string_copy: Use kzalloc() to avoid leaking old data |
+| [d88a3a9](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/d88a3a9742e05bbc92132199cf114fa84602cb37) | [a39ecb8](https://github.com/gregkh/linux/commit/a39ecb856514274c80d0fac4d128dba6b266a8ed) | netfilter: nf_conntrack_expect: zero at allocation time |
 
-### BACKPORT
+## BACKPORT
 
-| Local commit | 6.18.y commit | 4.19 adaptation |
+| Patch | 6.18.y | Description |
 |---|---|---|
-| `be6c961f9264` | `03905e564048` | `lib/cmdline`: fix `get_options()` count and overflow; 4.19 has no validation mode or KUnit test |
-| `69de62e970db` | `3634a1beb039` | ALSA hwdep: serialize DSP load; `guard(mutex)` replaced with explicit mutex locking |
-| `a6ad0afc82ac` | `04d11c4db269` | ALSA control: fix UAF on card disconnect; explicit lock, shutdown check, and `kctl` cleanup |
-| `0b959255fb62` | `d0fa85e36496` | USB gadget inode: fix `mm` lifetime; uses `use_mm()`/`unuse_mm()` and the 4.19 `ki_complete()` signature |
-
-## Release naming
-
-`a8aa1baf843b` (`arm64: configs: use 6.18-backport device release names`)
-
-- `KERNELVERSION` is set to `6.18-backport`.
-- Each device fragment sets `CONFIG_LOCALVERSION="-<codename>"`.
-- `CONFIG_LOCALVERSION_AUTO` is disabled.
-- `localversion-cip` and `localversion-st` are removed so their suffixes
-  do not appear in the release string.
-
-Verified release names:
-
-| Device | kernelrelease |
-|---|---|
-| c1s | `6.18-backport-c1s` |
-| c1slte | `6.18-backport-c1slte` |
-| c2s | `6.18-backport-c2s` |
-| c2slte | `6.18-backport-c2slte` |
-| r8s | `6.18-backport-r8s` |
-| x1s | `6.18-backport-x1s` |
-| x1slte | `6.18-backport-x1slte` |
-| y2s | `6.18-backport-y2s` |
-| y2slte | `6.18-backport-y2slte` |
-| z3s | `6.18-backport-z3s` |
-
-## Build
-
-Incremental out-of-tree build with clang:
-
-```sh
-make O=out ARCH=arm64 -j6 \
-  CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm \
-  OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
-  CROSS_COMPILE=aarch64-linux-gnu- \
-  HOSTCFLAGS_extract-cert.o=-DOPENSSL_IS_BORINGSSL \
-  CFLAGS_dhd_debug.o=-Wno-unused-but-set-global \
-  LOCALVERSION=
-```
-
-`LOCALVERSION=` is required so `scripts/setlocalversion` does not append
-a `+` or SCM suffix.
-
-For device builds, merge the matching fragment before building:
-
-```sh
-scripts/kconfig/merge_config.sh -m -O out out/.config \
-  arch/arm64/configs/z3s.config
-make O=out ARCH=arm64 olddefconfig
-```
-
-## z3s boot image
-
-The z3s test image uses the ramdisk and DTB from the LineageOS 24 z3s
-`boot.img`. Header parameters:
-
-- header version: 2
-- page size: 2048
-- base: `0x10000000`
-- kernel offset: `0x8000`
-- ramdisk offset: `0x1000000`
-- DTB offset: `0x0`
-- tags offset: `0x100`
-- OS version: 17.0.0
-- OS patch level: 2026-11
+| [be6c961](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/be6c961f9264e7a5854ec4b852df976f67c49690) | [03905e5](https://github.com/gregkh/linux/commit/03905e564048b095163cfa42e21d8a382fecfd54) | lib/cmdline: fix get_options() count and overflow with large ranges |
+| [69de62e](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/69de62e970db4a86313f38365ed82287b2cb535a) | [3634a1b](https://github.com/gregkh/linux/commit/3634a1beb0395f02807d41a2edf4288732d3f90e) | ALSA: hwdep: Serialize DSP load requests |
+| [a6ad0af](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/a6ad0afc82ac17dd7c83f81e8a178b345e92be78) | [04d11c4](https://github.com/gregkh/linux/commit/04d11c4db269e76ded488e650af9b70d523c6cee) | ALSA: control: Fix UAF in snd_ctl_elem_add() on card disconnect |
+| [0b95925](https://github.com/N1709/android_kernel_samsung_universal9830-backport/commit/0b959255fb622cae215e318f2601466e3167a476) | [d0fa85e](https://github.com/gregkh/linux/commit/d0fa85e364968f531ea906df59962e32872e4b63) | USB: gadget: inode: fix mm lifetime handling |
