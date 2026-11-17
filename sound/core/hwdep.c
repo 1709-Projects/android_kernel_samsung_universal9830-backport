@@ -230,14 +230,20 @@ static int snd_hwdep_dsp_load(struct snd_hwdep *hw,
 		return -EFAULT;
 	if (info.index >= 32)
 		return -EINVAL;
+	mutex_lock(&hw->dsp_mutex);
 	/* check whether the dsp was already loaded */
-	if (hw->dsp_loaded & (1u << info.index))
-		return -EBUSY;
+	if (hw->dsp_loaded & (1u << info.index)) {
+		err = -EBUSY;
+		goto unlock;
+	}
 	err = hw->ops.dsp_load(hw, &info);
 	if (err < 0)
-		return err;
+		goto unlock;
 	hw->dsp_loaded |= (1u << info.index);
-	return 0;
+	err = 0;
+unlock:
+	mutex_unlock(&hw->dsp_mutex);
+	return err;
 }
 
 static long snd_hwdep_ioctl(struct file * file, unsigned int cmd,
@@ -384,6 +390,7 @@ int snd_hwdep_new(struct snd_card *card, char *id, int device,
 
 	init_waitqueue_head(&hwdep->open_wait);
 	mutex_init(&hwdep->open_mutex);
+	mutex_init(&hwdep->dsp_mutex);
 	hwdep->card = card;
 	hwdep->device = device;
 	if (id)
