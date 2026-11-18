@@ -1349,7 +1349,7 @@ static void ts_set_utc_sponge(struct zt_ts_info *info)
 		input_err(true, &info->client->dev, "%s: Failed to write sponge\n", __func__);
 }
 
-int get_fod_info(struct zt_ts_info *info)
+static int get_fod_info(struct zt_ts_info *info)
 {
 	u8 data[6] = {0, };
 	int ret, i;
@@ -1369,7 +1369,7 @@ int get_fod_info(struct zt_ts_info *info)
 	return ret;
 }
 
-int get_aod_active_area(struct zt_ts_info *info)
+static int get_aod_active_area(struct zt_ts_info *info)
 {
 	int ret;
 
@@ -1666,7 +1666,7 @@ int get_zt_tsp_nvm_data(struct zt_ts_info *info, u8 addr, u8 *values, u16 length
 int set_zt_tsp_nvm_data(struct zt_ts_info *info, u8 addr, u8 *values, u16 length);
 #endif
 
-void location_detect(struct zt_ts_info *info, char *loc, int x, int y);
+static void location_detect(struct zt_ts_info *info, char *loc, int x, int y);
 
 #ifdef USE_MISC_DEVICE
 static long ts_misc_fops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
@@ -3441,7 +3441,7 @@ void trustedui_mode_off(void) {
 EXPORT_SYMBOL(trustedui_mode_off);
 #endif
 
-void location_detect(struct zt_ts_info *info, char *loc, int x, int y)
+static void location_detect(struct zt_ts_info *info, char *loc, int x, int y)
 {
 	memset(loc, 0x00, 7);
 	strncpy(loc, "xy:", 3);
