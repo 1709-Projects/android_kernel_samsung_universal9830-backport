@@ -206,6 +206,17 @@ static struct device_attribute *fp_attrs[] = {
 	NULL,
 };
 
+#if defined(ENABLE_SENSORS_FPRINT_SECURE)
+int fpsensor_goto_suspend = 0;
+
+int fps_resume_set(void) {
+	int rc = 0;
+
+	if (fpsensor_goto_suspend)
+		fpsensor_goto_suspend = 0;
+	return rc;
+}
+#endif
 
 #ifdef QBT2000_AVOID_NOISE
 static int qbt2000_noise_control(struct qbt2000_drvdata *drvdata, int control)

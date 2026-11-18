@@ -73,7 +73,6 @@ EXPORT_SYMBOL(fp_lockscreen_mode);
 #endif
 
 extern int fpsensor_goto_suspend;
-int fps_resume_set(void);
 #endif
 
 #endif
