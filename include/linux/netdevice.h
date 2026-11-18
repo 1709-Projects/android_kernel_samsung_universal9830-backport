@@ -3036,6 +3036,11 @@ static inline void skb_gro_flush_final_remcsum(struct sk_buff *skb,
 }
 #endif
 
+static inline bool dev_has_header(const struct net_device *dev)
+{
+	return dev->header_ops && dev->header_ops->create;
+}
+
 static inline int dev_hard_header(struct sk_buff *skb, struct net_device *dev,
 				  unsigned short type,
 				  const void *daddr, const void *saddr,
