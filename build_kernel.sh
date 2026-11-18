@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Keep the release string free of SCM suffixes.
+export LOCALVERSION=
+
 export PLATFORM_VERSION=11
 export ANDROID_MAJOR_VERSION=r
 export ARCH=arm64
