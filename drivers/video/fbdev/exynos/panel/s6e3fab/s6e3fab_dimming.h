@@ -114,7 +114,7 @@ static struct tp s6e3fab_canvas_hmd_tp[S6E3FAB_NR_TP] = {
 };
 #endif
 
-#if defined(CONFIG_SUPPORT_DIM_FLASH) && defined(MAX_S6E3FAB_VRR) && defined(S6E3FAB_VRR_60_NORMAL)
+#ifdef CONFIG_SUPPORT_DIM_FLASH
 static struct dim_flash_info s6e3fab_dim_flash_info[MAX_S6E3FAB_VRR][MAX_DIM_FLASH] = {
 	[S6E3FAB_VRR_60_NORMAL] = {
 		[DIM_FLASH_GAMMA] = {
