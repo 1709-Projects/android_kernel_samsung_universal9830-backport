@@ -425,7 +425,7 @@ done:
 #define LOG_PRINT_THRESH (1u * USEC_PER_SEC)
 #endif
 #define EL_PARSE_VER	"V02"
-static uint64 verboselog_ts_saved = 0;
+static uint64 verboselog_ts_saved __maybe_unused = 0;
 
 bool
 dhd_dbg_process_event_log_hdr(event_log_hdr_t *log_hdr, prcd_event_log_hdr_t *prcd_log_hdr)
