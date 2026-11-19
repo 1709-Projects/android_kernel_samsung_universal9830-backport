@@ -1,5 +1,5 @@
 /*
-* Samsung Exynos5 SoC series FIMC-IS driver
+ * Samsung Exynos5 SoC series FIMC-IS driver
  *
  * exynos5 fimc-is vender functions
  *
@@ -13,13 +13,31 @@
 #ifndef IS_VENDOR_CONFIG_H
 #define IS_VENDOR_CONFIG_H
 
+#include <linux/kconfig.h>
+
 #define USE_BINARY_PADDING_DATA_ADDED	/* for DDK signature */
 
 #if defined(USE_BINARY_PADDING_DATA_ADDED) && (defined(CONFIG_USE_SIGNED_BINARY) || defined(CONFIG_SAMSUNG_PRODUCT_SHIP))
 #define USE_TZ_CONTROLLED_MEM_ATTRIBUTE
 #endif
 
-#if defined(CONFIG_CAMERA_HST_V01)
+/*
+ * A normal product kernel enables exactly one camera configuration at build
+ * time and includes the matching header. The unified kernel enables all of
+ * them, and the real configuration is then picked from the device tree model
+ * when the camera core probes.
+ */
+#define IS_VENDOR_CFG_COUNT (0 \
+	+ IS_ENABLED(CONFIG_CAMERA_HST_V01) \
+	+ IS_ENABLED(CONFIG_CAMERA_HST_V02) \
+	+ IS_ENABLED(CONFIG_CAMERA_HST_V03) \
+	+ IS_ENABLED(CONFIG_CAMERA_CNT_V01) \
+	+ IS_ENABLED(CONFIG_CAMERA_CNT_V02) \
+	+ IS_ENABLED(CONFIG_CAMERA_RST_V08))
+
+#if IS_VENDOR_CFG_COUNT > 1
+#include "is-vendor-config_universal9830.h"
+#elif defined(CONFIG_CAMERA_HST_V01)
 #include "is-vendor-config_hst_v01.h"
 #elif defined(CONFIG_CAMERA_HST_V02)
 #include "is-vendor-config_hst_v02.h"
@@ -34,5 +52,7 @@
 #else
 #include "is-vendor-config_hst_v02.h" /* Default */
 #endif
+
+#include "is-vendor-config-runtime.h"
 
 #endif

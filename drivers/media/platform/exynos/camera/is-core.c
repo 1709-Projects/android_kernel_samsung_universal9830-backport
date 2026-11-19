@@ -1030,6 +1030,8 @@ static struct attribute_group is_debug_attr_group = {
 
 static int __init is_probe(struct platform_device *pdev)
 {
+	is_vendor_config_init();
+
 	struct exynos_platform_is *pdata;
 	struct is_core *core;
 	int ret = -ENODEV;

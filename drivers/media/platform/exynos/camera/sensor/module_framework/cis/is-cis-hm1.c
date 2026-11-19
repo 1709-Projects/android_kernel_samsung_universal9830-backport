@@ -40,6 +40,7 @@
 #include "is-cis-hm1-setA.h"
 #include "is-helper-i2c.h"
 #include "is-sec-define.h"
+#include "is-vendor-config-runtime.h"
 
 #define SENSOR_NAME "S5KHM1"
 /* #define DEBUG_HM1_PLL */
@@ -696,8 +697,8 @@ int sensor_hm1_cis_set_cal(struct v4l2_subdev *subdev)
 	info("[%s] eeprom read, start set cal\n", __func__);
 	is_sec_get_cal_buf(&cal_buf, ROM_ID_REAR);
 
-#ifdef CAMERA_HM1_CAL_MODULE_VERSION
-	if (finfo->header_ver[10] < CAMERA_HM1_CAL_MODULE_VERSION) {
+	if (is_vendor_cfg()->hm1_cal_check &&
+		finfo->header_ver[10] < CAMERA_HM1_CAL_MODULE_VERSION) {
 		start_addr = finfo->rom_xtc_cal_data_addr_list[HM1_CAL_START_ADDR];
 		if (cal_buf[start_addr + 2] == 0xFF && cal_buf[start_addr + 3] == 0xFF &&
 			cal_buf[start_addr + 4] == 0xFF && cal_buf[start_addr + 5] == 0xFF &&
@@ -725,7 +726,6 @@ int sensor_hm1_cis_set_cal(struct v4l2_subdev *subdev)
 			}
 		}
 	}
-#endif
 
 	WARN_ON(!subdev);
 
@@ -1087,15 +1087,14 @@ int sensor_hm1_cis_set_global_setting(struct v4l2_subdev *subdev)
 			err("sensor_hm1_set_registers fail!!");
 			goto p_err;
 		}
-#ifdef USE_WIDE_MIPI_STRENGTH_490MV
 		ret |= is_sensor_write16(cis->client, 0xFCFC, 0x4000);
-		ret |= is_sensor_write16(cis->client, 0x6B04, 0xB000);
-		info("[%s] mipi strength 490mV\n", __func__);
-#else
-		ret |= is_sensor_write16(cis->client, 0xFCFC, 0x4000);
-		ret |= is_sensor_write16(cis->client, 0x6B04, 0xE000);
-		info("[%s] mipi strength 520mV(default)\n", __func__);
-#endif
+		if (is_vendor_cfg()->wide_mipi_strength_490mv) {
+			ret |= is_sensor_write16(cis->client, 0x6B04, 0xB000);
+			info("[%s] mipi strength 490mV\n", __func__);
+		} else {
+			ret |= is_sensor_write16(cis->client, 0x6B04, 0xE000);
+			info("[%s] mipi strength 520mV(default)\n", __func__);
+		}
 		info("[%s] global setting done\n", __func__);
 
 #ifdef GLOBAL_TIME_CAL_WRITE

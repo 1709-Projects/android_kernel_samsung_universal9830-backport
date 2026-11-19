@@ -36,6 +36,7 @@
 #include "is-device-sensor-peri.h"
 #include "is-resourcemgr.h"
 #include "is-dt.h"
+#include "is-vendor-config-runtime.h"
 #include "is-cis-gw2.h"
 #include "is-cis-gw2-setA.h"
 #if 0
@@ -642,7 +643,8 @@ int sensor_gw2_cis_set_pdxtc_calibration(struct is_cis *cis)
 	is_sec_get_sysfs_finfo(&finfo, ROM_ID_REAR);
 
 #ifdef CAMERA_GW2_PDXTC_MODULE_VERSION
-	if(finfo->header_ver[10] < CAMERA_GW2_PDXTC_MODULE_VERSION) {
+	if (is_vendor_cfg()->gw2_pdxtc_version &&
+		finfo->header_ver[10] < is_vendor_cfg()->gw2_pdxtc_version) {
 		info("%s - skip pdxtc_cal, cal value not valid(cur_header : %s)", __func__, finfo->header_ver);
 		return 0;
 	}
@@ -1023,7 +1025,8 @@ int sensor_gw2_cis_mode_change(struct v4l2_subdev *subdev, u32 mode)
 #endif
 
 #ifdef CAMERA_GW2_PDXTC_MODULE_VERSION
-	if (finfo->header_ver[10] < CAMERA_GW2_PDXTC_MODULE_VERSION) {
+	if (is_vendor_cfg()->gw2_pdxtc_version &&
+		finfo->header_ver[10] < is_vendor_cfg()->gw2_pdxtc_version) {
 		ret = is_sensor_write16(cis->client, 0x6028, 0x2000);
 		ret = is_sensor_write16(cis->client, 0x602A, 0x55B0);
 		ret = is_sensor_write16(cis->client, 0x6F12, 0x0000);

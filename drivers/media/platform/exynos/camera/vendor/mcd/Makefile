@@ -1,4 +1,5 @@
-obj-$(CONFIG_VENDER_MCD) := is-vender.o \
+obj-$(CONFIG_VENDER_MCD) := is-vendor-config-runtime.o \
+				is-vender.o \
 				is-sec-define.o \
 				crc32.o \
 				is-sysfs.o \

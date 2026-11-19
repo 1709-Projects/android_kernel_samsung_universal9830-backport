@@ -35,6 +35,7 @@
 #include "is-device-sensor-peri.h"
 #include "is-resourcemgr.h"
 #include "is-dt.h"
+#include "is-vendor-config-runtime.h"
 
 #include "is-device-module-base.h"
 
@@ -229,11 +230,11 @@ static int sensor_module_imx516_power_setpin(struct device *dev,
 	SET_PIN_INIT(pdata, SENSOR_SCENARIO_ADDITIONAL_POWER, GPIO_SCENARIO_ON);
 
 	/********** REAR TOF CAMERA  - POWER ON **********/
-#ifdef USE_BUCK2_REGULATOR_CONTROL
-	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, gpio_none, "VDD_EXT_1P3_PB02", PIN_REGULATOR, 1, 0);
-	SET_PIN_SHARED(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, SRT_ACQUIRE,
-			&core->shared_rsc_slock[SHARED_PIN4], &core->shared_rsc_count[SHARED_PIN4], 1);
-#endif
+	if (is_vendor_cfg()->use_buck2) {
+		SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, gpio_none, "VDD_EXT_1P3_PB02", PIN_REGULATOR, 1, 0);
+		SET_PIN_SHARED(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, SRT_ACQUIRE,
+				&core->shared_rsc_slock[SHARED_PIN4], &core->shared_rsc_count[SHARED_PIN4], 1);
+	}
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, gpio_none, "VDDA_2.7V_TOF", PIN_REGULATOR, 1, 0);
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, gpio_none, "VDDIO_1.8V_TOF", PIN_REGULATOR, 1, 0);
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, gpio_none, "VDDD_1.2V_TOF", PIN_REGULATOR, 1, 0);
@@ -268,11 +269,11 @@ static int sensor_module_imx516_power_setpin(struct device *dev,
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_OFF, gpio_none, "VDDIO_1.8V_TOF", PIN_REGULATOR, 0, 0);
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_OFF, gpio_none, "VDDA_2.7V_TOF", PIN_REGULATOR, 0, 0);
 	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_OFF, gpio_none, "VDDD_3.3V_TOF", PIN_REGULATOR, 0, 0);
-#ifdef USE_BUCK2_REGULATOR_CONTROL
-	SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_OFF, gpio_none, "VDD_EXT_1P3_PB02", PIN_REGULATOR, 0, 0);
-	SET_PIN_SHARED(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, SRT_RELEASE,
-			&core->shared_rsc_slock[SHARED_PIN4], &core->shared_rsc_count[SHARED_PIN4], 0);
-#endif
+	if (is_vendor_cfg()->use_buck2) {
+		SET_PIN(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_OFF, gpio_none, "VDD_EXT_1P3_PB02", PIN_REGULATOR, 0, 0);
+		SET_PIN_SHARED(pdata, SENSOR_SCENARIO_VISION, GPIO_SCENARIO_ON, SRT_RELEASE,
+				&core->shared_rsc_slock[SHARED_PIN4], &core->shared_rsc_count[SHARED_PIN4], 0);
+	}
 
 	dev_info(dev, "%s X v4\n", __func__);
 

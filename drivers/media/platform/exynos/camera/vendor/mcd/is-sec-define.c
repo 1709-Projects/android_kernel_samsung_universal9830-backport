@@ -13,6 +13,7 @@
 #include "is-sec-define.h"
 #include "is-vender-specific.h"
 #include "is-interface-library.h"
+#include "is-vendor-config-runtime.h"
 
 #include <linux/i2c.h>
 #include "is-device-eeprom.h"
@@ -220,7 +221,7 @@ bool is_sec_check_cal_crc32(char *buf, int rom_id)
 	crc32_header_temp = true;
 	crc32_dual_temp = true;
 
-	address_boundary = IS_MAX_CAL_SIZE;
+	address_boundary = is_vendor_cfg()->max_cal_size;
 
 	/* header crc check */
 	for (i = 0; i < finfo->header_crc_check_list_len; i += 3) {
@@ -997,16 +998,12 @@ int is_sec_parse_rom_info(struct is_rom_info *finfo, char *buf, int rom_id)
 	}
 
 #if defined(CONFIG_CAMERA_USE_MCU) || defined(CONFIG_CAMERA_USE_INTERNAL_MCU)
-	if ((rom_id == ROM_ID_REAR
-#ifdef TELE_OIS_TILT_ROM_ID
-		|| rom_id == TELE_OIS_TILT_ROM_ID
-#endif
-		) && finfo->rom_ois_list_len == IS_ROM_OIS_MAX_LIST) {
+	if ((rom_id == ROM_ID_REAR ||
+		(is_vendor_cfg()->tele_ois_tilt_rom_id >= 0 &&
+		 rom_id == is_vendor_cfg()->tele_ois_tilt_rom_id))
+		&& finfo->rom_ois_list_len == IS_ROM_OIS_MAX_LIST) {
 		is_sec_get_ois_pinfo(&ois_pinfo);
-#ifdef TELE_OIS_TILT_ROM_ID
-		if (rom_id == ROM_ID_REAR)
-#endif
-		{
+		if (rom_id == ROM_ID_REAR) {
 			memcpy(ois_pinfo->wide_xgg, &buf[finfo->rom_ois_list[0]], IS_OIS_GYRO_DATA_SIZE);
 			memcpy(ois_pinfo->wide_ygg, &buf[finfo->rom_ois_list[1]], IS_OIS_GYRO_DATA_SIZE);
 			memcpy(ois_pinfo->wide_xcoef, &buf[finfo->rom_ois_list[2]], IS_OIS_COEF_DATA_SIZE);
@@ -1014,11 +1011,7 @@ int is_sec_parse_rom_info(struct is_rom_info *finfo, char *buf, int rom_id)
 			memcpy(ois_pinfo->wide_supperssion_xratio, &buf[finfo->rom_ois_list[4]], IS_OIS_SUPPERSSION_RATIO_DATA_SIZE);
 			memcpy(ois_pinfo->wide_supperssion_yratio, &buf[finfo->rom_ois_list[5]], IS_OIS_SUPPERSSION_RATIO_DATA_SIZE);
 			memcpy(ois_pinfo->wide_cal_mark, &buf[finfo->rom_ois_list[6]], IS_OIS_CAL_MARK_DATA_SIZE);
-		}
-#ifdef TELE_OIS_TILT_ROM_ID
-		else if (rom_id == TELE_OIS_TILT_ROM_ID)
-#endif
-		{
+		} else {
 			memcpy(ois_pinfo->tele_xgg, &buf[finfo->rom_ois_list[7]], IS_OIS_GYRO_DATA_SIZE);
 			memcpy(ois_pinfo->tele_ygg, &buf[finfo->rom_ois_list[8]], IS_OIS_GYRO_DATA_SIZE);
 			memcpy(ois_pinfo->tele_xcoef, &buf[finfo->rom_ois_list[9]], IS_OIS_COEF_DATA_SIZE);
@@ -1227,7 +1220,7 @@ crc_retry:
 	is_sec_parse_rom_info(finfo, buf, rom_id);
 
 #ifdef CAMERA_REAR_TOF
-	if (rom_id == REAR_TOF_ROM_ID) {
+	if (is_vendor_cfg()->rear_tof && rom_id == REAR_TOF_ROM_ID) {
 #ifdef REAR_TOF_CHECK_SENSOR_ID
 		is_sec_sensorid_find_rear_tof(core);
 		if (specific->rear_tof_sensor_id == SENSOR_NAME_IMX316) {

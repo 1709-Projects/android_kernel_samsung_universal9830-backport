@@ -36,6 +36,7 @@
 #include "is-resourcemgr.h"
 #include "is-dt.h"
 #include "is-device-module-base.h"
+#include "is-vendor-config-runtime.h"
 #include "interface/is-interface-library.h"
 #if defined(CONFIG_CAMERA_PAFSTAT)
 #include "pafstat/is-pafstat.h"
@@ -1064,10 +1065,12 @@ int sensor_module_s_ext_ctrls(struct v4l2_subdev *subdev, struct v4l2_ext_contro
 		case V4L2_CID_SENSOR_SET_TOF_AUTO_FOCUS:
 		{
 #ifdef USE_TOF_AF
-			struct is_vender *vender;
+			if (is_vendor_cfg()->tof_af) {
+				struct is_vender *vender;
 
-			vender = &core->vender;
-			is_vender_store_af(vender, (struct tof_data_t*)ext_ctrl->ptr);
+				vender = &core->vender;
+				is_vender_store_af(vender, (struct tof_data_t*)ext_ctrl->ptr);
+			}
 #endif
 			break;
 		}

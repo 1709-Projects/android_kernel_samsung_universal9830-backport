@@ -878,7 +878,7 @@ void is_sensor_ctl_frame_evt(struct is_device_sensor *device)
 #ifdef USE_OIS_HALL_DATA_FOR_VDIS
 			cur_frame_duration = is_sensor_convert_ns_to_us(sensor_peri->cis.cur_sensor_uctrl.frameDuration);
 			/* in case of under 60fps, enable ois hall data */
-			if (cur_frame_duration >= 16666) {
+			if (is_vendor_cfg()->ois_hall_vdis && cur_frame_duration >= 16666) {
 				memset(&hall_data, 0, sizeof(hall_data));
 				ret = CALL_OISOPS(sensor_peri->mcu->ois, ois_get_hall_data, sensor_peri->subdev_mcu, &hall_data);
 				if (ret < 0) {

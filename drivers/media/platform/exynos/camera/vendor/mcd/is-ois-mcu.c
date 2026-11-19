@@ -532,13 +532,11 @@ int ois_mcu_init(struct v4l2_subdev *subdev)
 	u8 tele_xcoef[2];
 	u8 tele_ycoef[2];	
 	long efs_size = 0;
-#ifndef OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE
 	int rom_id = 0;
 	char *cal_buf;
 	struct is_rom_info *finfo = NULL;
 	u8 eeprom_xcoef[2];
 	u8 eeprom_ycoef[2];
-#endif
 #endif
 	struct is_mcu *is_mcu = NULL;
 	struct ois_mcu_dev *mcu = NULL;
@@ -663,23 +661,25 @@ int ois_mcu_init(struct v4l2_subdev *subdev)
 			/* write tele xgg ygg xcoef ycoef */
 			if (ois_pinfo->tele_cal_mark[0] == 0xBB) {
 #ifndef OIS_DUAL_CAL_DEFAULT_VALUE_TELE
-				buf = vmalloc(MAX_HALL_SHIFT_DATA_LENGTH);
-				if (!buf) {
-					err("memory alloc failed.");
-					return 0;
-				}
+				if (is_vendor_cfg()->ois_default_tele < 0) {
+					buf = vmalloc(MAX_HALL_SHIFT_DATA_LENGTH);
+					if (!buf) {
+						err("memory alloc failed.");
+						return 0;
+					}
 
-				efs_size = is_vender_read_efs(MCU_HALL_SHIFT_VALUE_FROM_EFS, buf, MAX_HALL_SHIFT_DATA_LENGTH);
-				if (efs_size) {
-					efs_info.ois_hall_shift_x = *((s16 *)&buf[MCU_HALL_SHIFT_ADDR_X_M2]);
-					efs_info.ois_hall_shift_y = *((s16 *)&buf[MCU_HALL_SHIFT_ADDR_Y_M2]);
-					set_bit(IS_EFS_STATE_READ, &efs_info.efs_state);
-				} else {
-					clear_bit(IS_EFS_STATE_READ, &efs_info.efs_state);
-				}
+					efs_size = is_vender_read_efs(MCU_HALL_SHIFT_VALUE_FROM_EFS, buf, MAX_HALL_SHIFT_DATA_LENGTH);
+					if (efs_size) {
+						efs_info.ois_hall_shift_x = *((s16 *)&buf[MCU_HALL_SHIFT_ADDR_X_M2]);
+						efs_info.ois_hall_shift_y = *((s16 *)&buf[MCU_HALL_SHIFT_ADDR_Y_M2]);
+						set_bit(IS_EFS_STATE_READ, &efs_info.efs_state);
+					} else {
+						clear_bit(IS_EFS_STATE_READ, &efs_info.efs_state);
+					}
 
-				if (buf)
-					vfree(buf);
+					if (buf)
+						vfree(buf);
+				}
 #endif
 				for (i = 0; i < 4; i++) {
 					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_REAR2_XGG1 + i, ois_pinfo->tele_xgg[i]);
@@ -695,32 +695,39 @@ int ois_mcu_init(struct v4l2_subdev *subdev)
 
 				info_mcu("%s tele use default coef value", __func__);
 #else
-				if (!test_bit(IS_EFS_STATE_READ, &efs_info.efs_state)) {
-#ifdef OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1, OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1 + 1, OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1, OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1 + 1, OIS_DUAL_CAL_DEFAULT_EEPROM_VALUE_TELE);
+				if (is_vendor_cfg()->ois_default_tele >= 0) {
+					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1, is_vendor_cfg()->ois_default_tele);
+					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1 + 1, is_vendor_cfg()->ois_default_tele);
+					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1, is_vendor_cfg()->ois_default_tele);
+					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1 + 1, is_vendor_cfg()->ois_default_tele);
 
-					info_mcu("%s tele use default eeprom coef value", __func__);
-#else
-					rom_id = is_vendor_get_rom_id_from_position(SENSOR_POSITION_REAR2);
-					is_sec_get_cal_buf(&cal_buf, rom_id);
-					is_sec_get_sysfs_finfo(&finfo, rom_id);
+					info_mcu("%s tele use default coef value", __func__);
+				} else if (!test_bit(IS_EFS_STATE_READ, &efs_info.efs_state)) {
+					if (is_vendor_cfg()->ois_eeprom_default_tele >= 0) {
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1, is_vendor_cfg()->ois_eeprom_default_tele);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1 + 1, is_vendor_cfg()->ois_eeprom_default_tele);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1, is_vendor_cfg()->ois_eeprom_default_tele);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1 + 1, is_vendor_cfg()->ois_eeprom_default_tele);
 
-					eeprom_xcoef[0] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_x_addr]);
-					eeprom_xcoef[1] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_x_addr + 1]);
-					eeprom_ycoef[0] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_y_addr]);
-					eeprom_ycoef[1] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_y_addr + 1]);
+						info_mcu("%s tele use default eeprom coef value", __func__);
+					} else {
+						rom_id = is_vendor_get_rom_id_from_position(SENSOR_POSITION_REAR2);
+						is_sec_get_cal_buf(&cal_buf, rom_id);
+						is_sec_get_sysfs_finfo(&finfo, rom_id);
 
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1, eeprom_xcoef[0]);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1 + 1, eeprom_xcoef[1]);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1, eeprom_ycoef[0]);
-					is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1 + 1, eeprom_ycoef[1]);
+						eeprom_xcoef[0] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_x_addr]);
+						eeprom_xcoef[1] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_x_addr + 1]);
+						eeprom_ycoef[0] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_y_addr]);
+						eeprom_ycoef[1] = *((u8 *)&cal_buf[finfo->rom_dualcal_slave1_oisshift_y_addr + 1]);
 
-					info_mcu("%s tele eeprom xcoef = %d/%d, ycoef = %d/%d", __func__, eeprom_xcoef[0], eeprom_xcoef[1],
-						eeprom_ycoef[0], eeprom_ycoef[1]);
-#endif
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1, eeprom_xcoef[0]);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_XCOEF_M2_1 + 1, eeprom_xcoef[1]);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1, eeprom_ycoef[0]);
+						is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_YCOEF_M2_1 + 1, eeprom_ycoef[1]);
+
+						info_mcu("%s tele eeprom xcoef = %d/%d, ycoef = %d/%d", __func__, eeprom_xcoef[0], eeprom_xcoef[1],
+							eeprom_ycoef[0], eeprom_ycoef[1]);
+					}
 				} else {
 					tele_xcoef[0] = efs_info.ois_hall_shift_x & 0xFF;
 					tele_xcoef[1] = (efs_info.ois_hall_shift_x >> 8) & 0xFF;
@@ -1163,13 +1170,12 @@ int ois_mcu_shift_compensation(struct v4l2_subdev *subdev, int position, int res
 		is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_REAR_AF, (u8)position_changed);
 		ois->af_pos_wide = position_changed;
 	}
-#ifndef USE_TELE_OIS_AF_COMMON_INTERFACE
-	else if (module->position == SENSOR_POSITION_REAR2 && ois->af_pos_tele != position_changed) {
+	else if (!is_vendor_cfg()->tele_ois_af_common &&
+		module->position == SENSOR_POSITION_REAR2 && ois->af_pos_tele != position_changed) {
 		/* Tele af position value */
 		is_mcu_set_reg(mcu->regs[OM_REG_CORE], R_OIS_CMD_REAR2_AF, (u8)position_changed);
 		ois->af_pos_tele = position_changed;
 	}
-#endif
 
 p_err:
 	return ret;
@@ -1651,11 +1657,10 @@ bool ois_mcu_auto_test_rear2(struct is_core *core,
 
 #ifdef CONFIG_AF_HOST_CONTROL
 #ifdef CAMERA_REAR2_AF
-#ifdef USE_TELE_OIS_AF_COMMON_INTERFACE
-	ois_mcu_af_move_lens_rear2(core);
-#else
-	is_af_move_lens_rear2(core);
-#endif
+	if (is_vendor_cfg()->tele_ois_af_common)
+		ois_mcu_af_move_lens_rear2(core);
+	else
+		is_af_move_lens_rear2(core);
 	msleep(100);
 #endif
 	is_af_move_lens(core);
@@ -2992,8 +2997,8 @@ static int __init ois_mcu_probe(struct platform_device *pdev)
 		ois[i].i2c_lock = NULL;
 		ois[i].ois_ops = &ois_ops_mcu;
 
-#ifdef USE_TELE_OIS_AF_COMMON_INTERFACE
-		if (sensor_id[i] == SENSOR_POSITION_REAR2) {
+		if (is_vendor_cfg()->tele_ois_af_common &&
+			sensor_id[i] == SENSOR_POSITION_REAR2) {
 			actuator->id = ACTUATOR_NAME_AK737X;
 			actuator->subdev = subdev_actuator;
 			actuator->device = sensor_id[i];
@@ -3013,7 +3018,6 @@ static int __init ois_mcu_probe(struct platform_device *pdev)
 			v4l2_set_subdevdata(subdev_actuator, actuator);
 			v4l2_set_subdev_hostdata(subdev_actuator, device);
 		}
-#endif
 
 		is_mcu[i].mcu_ctrl_actuator = mcu_actuator_list[i];
 		is_mcu[i].subdev_ois = &subdev_ois[i];

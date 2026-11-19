@@ -26,6 +26,7 @@
 #include "is-device-sensor-peri.h"
 #include "is-vender-specific.h"
 #include "is-interface-library.h"
+#include "is-vendor-config-runtime.h"
 
 /* #define FORCE_CAL_LOAD */
 #define SYSFS_MAX_READ_SIZE	4096
@@ -418,11 +419,12 @@ static ssize_t camera_camfw_show(char *buf, enum is_cam_info_index cam_index, bo
 		is_sec_get_loaded_fw(&loaded_fw);
 	} else {
 		switch(position) {
-#ifndef USE_CAMFW_POLICY_ED38
 			case SENSOR_POSITION_REAR:
-				loaded_fw = pinfo->header_ver;
+				if (!is_vendor_cfg()->camfw_policy_ed38)
+					loaded_fw = pinfo->header_ver;
+				else
+					loaded_fw = cam_fw;
 				break;
-#endif
 			case SENSOR_POSITION_REAR_TOF:
 			case SENSOR_POSITION_FRONT_TOF:
 				loaded_fw = "N";
@@ -433,11 +435,9 @@ static ssize_t camera_camfw_show(char *buf, enum is_cam_info_index cam_index, bo
 		}
 	}
 
-#ifndef USE_CAMFW_POLICY_ED38
-	if (position == SENSOR_POSITION_REAR)
+	if (position == SENSOR_POSITION_REAR && !is_vendor_cfg()->camfw_policy_ed38)
 		phone_fw = pinfo->header_ver;
 	else
-#endif
 		phone_fw = "N";
 
 	other_vendor = test_bit(IS_ROM_STATE_OTHER_VENDOR, &finfo->rom_state);
@@ -1066,9 +1066,9 @@ static ssize_t camera_paf_offset_show(char *buf, bool is_mid, int f_index)
 	case FNUMBER_1ST :
 #ifdef ROM_PAF_CAL_DATA_START_ADDR
 		if (is_mid)
-			paf_offset_base = ROM_PAF_CAL_DATA_START_ADDR + IS_PAF_OFFSET_MID_OFFSET;
+			paf_offset_base = is_vendor_cfg()->paf_cal_start + IS_PAF_OFFSET_MID_OFFSET;
 		else
-			paf_offset_base = ROM_PAF_CAL_DATA_START_ADDR + IS_PAF_OFFSET_PAN_OFFSET;
+			paf_offset_base = is_vendor_cfg()->paf_cal_start + IS_PAF_OFFSET_PAN_OFFSET;
 #endif
 		break;
 	case FNUMBER_2ND :
@@ -1091,9 +1091,9 @@ static ssize_t camera_paf_offset_show(char *buf, bool is_mid, int f_index)
 		err("%s: invalid f_index [%d][%d], so set default", __func__, is_mid, f_index);
 #ifdef ROM_PAF_CAL_DATA_START_ADDR
 		if (is_mid)
-			paf_offset_base = ROM_PAF_CAL_DATA_START_ADDR + IS_PAF_OFFSET_MID_OFFSET;
+			paf_offset_base = is_vendor_cfg()->paf_cal_start + IS_PAF_OFFSET_MID_OFFSET;
 		else
-			paf_offset_base = ROM_PAF_CAL_DATA_START_ADDR + IS_PAF_OFFSET_PAN_OFFSET;
+			paf_offset_base = is_vendor_cfg()->paf_cal_start + IS_PAF_OFFSET_PAN_OFFSET;
 #endif
 		break;
 	}
@@ -1833,7 +1833,7 @@ static ssize_t camera_rear3_paf_cal_check_show(struct device *dev,
 	read_from_firmware_version(ROM_ID_REAR);
 	is_sec_get_cal_buf(&cal_buf, ROM_ID_REAR);
 
-	memcpy(data, &cal_buf[ROM_REAR3_PAF_CAL_DATA_START_ADDR + IS_PAF_CAL_ERR_CHECK_OFFSET], 4);
+	memcpy(data, &cal_buf[is_vendor_cfg()->rear3_paf_cal_start + IS_PAF_CAL_ERR_CHECK_OFFSET], 4);
 	paf_err_data_result = *data | ( *(data + 1) << 8) | ( *(data + 2) << 16) | (*(data + 3) << 24);
 
 	return sprintf(buf, "%08X\n", paf_err_data_result);
@@ -3241,7 +3241,7 @@ static bool read_ois_version(void)
 #endif
 	}
 
- 	return ret;
+	return ret;
 }
 
 static ssize_t camera_ois_power_store(struct device *dev,
@@ -3867,7 +3867,7 @@ static ssize_t camera_rear_paf_cal_check_show(struct device *dev,
 	read_from_firmware_version(ROM_ID_REAR);
 	is_sec_get_cal_buf(&cal_buf, ROM_ID_REAR);
 
-	memcpy(data, &cal_buf[ROM_PAF_CAL_DATA_START_ADDR + IS_PAF_CAL_ERR_CHECK_OFFSET], 4);
+	memcpy(data, &cal_buf[is_vendor_cfg()->paf_cal_start + IS_PAF_CAL_ERR_CHECK_OFFSET], 4);
 	paf_err_data_result = *data | ( *(data + 1) << 8) | ( *(data + 2) << 16) | (*(data + 3) << 24);
 
 	return sprintf(buf, "%08X\n", paf_err_data_result);
@@ -3986,7 +3986,7 @@ static ssize_t camera_front_paf_cal_check_show(struct device *dev,
 	read_from_firmware_version(ROM_ID_FRONT);
 	is_sec_get_cal_buf(&cal_buf, ROM_ID_FRONT);
 
-	memcpy(data, &cal_buf[ROM_PAF_CAL_DATA_START_ADDR_FRONT + ROM_PAF_CAL_ERR_CHECK_OFFSET], 4);
+	memcpy(data, &cal_buf[is_vendor_cfg()->front_paf_cal_start + ROM_PAF_CAL_ERR_CHECK_OFFSET], 4);
 	paf_err_data_result = *data | ( *(data + 1) << 8) | ( *(data + 2) << 16) | (*(data + 3) << 24);
 
 	return sprintf(buf, "%08X\n", paf_err_data_result);

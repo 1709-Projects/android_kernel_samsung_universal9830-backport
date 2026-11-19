@@ -1433,11 +1433,7 @@ bool is_laser_af_available(struct is_sensor_interface *itf)
 #endif
 
 bool is_tof_af_available(struct is_sensor_interface *itf){
-#ifdef USE_TOF_AF
-	return true;
-#else
-	return false;
-#endif
+	return is_vendor_cfg()->tof_af;
 }
 
 int get_sensor_frame_timing(struct is_sensor_interface *itf,
@@ -2038,21 +2034,23 @@ int update_sensor_dynamic_meta(struct is_sensor_interface *itf,
 	udm->sensor.midDigitalGain = sensor_peri->cis.expecting_sensor_udm[index].midDigitalGain;
 
 #ifdef USE_OIS_HALL_DATA_FOR_VDIS
-	/* update ois hall data */
-	dm->aa.vendor_oisHallData.readTimeStamp = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.readTimeStamp;
-	dm->aa.vendor_oisHallData.counter = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.counter;
-	dm->aa.vendor_oisHallData.X_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[0];
-	dm->aa.vendor_oisHallData.Y_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[0];
-	dm->aa.vendor_oisHallData.Z_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[0];
-	dm->aa.vendor_oisHallData.X_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[1];
-	dm->aa.vendor_oisHallData.Y_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[1];
-	dm->aa.vendor_oisHallData.Z_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[1];
-	dm->aa.vendor_oisHallData.X_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[2];
-	dm->aa.vendor_oisHallData.Y_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[2];
-	dm->aa.vendor_oisHallData.Z_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[2];
-	dm->aa.vendor_oisHallData.X_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[3];
-	dm->aa.vendor_oisHallData.Y_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[3];
-	dm->aa.vendor_oisHallData.Z_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[3];
+	if (is_vendor_cfg()->ois_hall_vdis) {
+		/* update ois hall data */
+		dm->aa.vendor_oisHallData.readTimeStamp = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.readTimeStamp;
+		dm->aa.vendor_oisHallData.counter = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.counter;
+		dm->aa.vendor_oisHallData.X_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[0];
+		dm->aa.vendor_oisHallData.Y_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[0];
+		dm->aa.vendor_oisHallData.Z_AngVel[0] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[0];
+		dm->aa.vendor_oisHallData.X_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[1];
+		dm->aa.vendor_oisHallData.Y_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[1];
+		dm->aa.vendor_oisHallData.Z_AngVel[1] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[1];
+		dm->aa.vendor_oisHallData.X_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[2];
+		dm->aa.vendor_oisHallData.Y_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[2];
+		dm->aa.vendor_oisHallData.Z_AngVel[2] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[2];
+		dm->aa.vendor_oisHallData.X_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.X_AngVel[3];
+		dm->aa.vendor_oisHallData.Y_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Y_AngVel[3];
+		dm->aa.vendor_oisHallData.Z_AngVel[3] = sensor_peri->cis.expecting_aa_dm[index].vendor_oisHallData.Z_AngVel[3];
+	}
 #endif
 
 	dbg_sensor(1, "[%s] (F:%d): expo(%lld), duration(%lld), sensitivity(%d), rollingShutterSkew(%lld)\n",
@@ -2760,12 +2758,12 @@ int request_direct_flash(struct is_sensor_interface *itf,
 		sensor_peri->flash->flash_data.intensity = intensity;
 		sensor_peri->flash->flash_data.firing_time_us = time;
 		sensor_peri->flash->flash_data.high_resolution_flash = true;
-#ifndef USE_HIGH_RES_FLASH_FIRE_BEFORE_STREAM_ON
-		ret = is_sensor_flash_fire(sensor_peri, sensor_peri->flash->flash_data.intensity);
-		if (ret) {
-			err("failed to turn off flash at flash expired handler\n");
+		if (!is_vendor_cfg()->high_res_flash_before_stream) {
+			ret = is_sensor_flash_fire(sensor_peri, sensor_peri->flash->flash_data.intensity);
+			if (ret) {
+				err("failed to turn off flash at flash expired handler\n");
+			}
 		}
-#endif
 		set_flash(itf, vsync_cnt + 2, CAM2_FLASH_MODE_OFF, 0, time);
 		if (ret < 0) {
 			pr_err("[%s] set_flash fail(%d)\n", __func__, ret);
@@ -4112,7 +4110,8 @@ int init_sensor_interface(struct is_sensor_interface *itf)
 #endif
 
 #ifdef USE_TOF_AF
-	itf->tof_af_itf_ops.get_data = get_tof_af_data;
+	if (is_vendor_cfg()->tof_af)
+		itf->tof_af_itf_ops.get_data = get_tof_af_data;
 #endif
 	/* MIPI-CSI interface */
 	itf->csi_itf_ops.get_vc_dma_buf = get_vc_dma_buf;

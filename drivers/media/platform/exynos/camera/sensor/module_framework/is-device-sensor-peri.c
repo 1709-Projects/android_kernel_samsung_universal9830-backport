@@ -832,7 +832,7 @@ void is_sensor_ois_set_init_work(struct work_struct *data)
 		err("v4l2_subdev_call(ois_set_mode) is fail(%d)", ret);
 
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-	if (sensor_peri->mcu->mcu_ctrl_actuator) {
+	if (is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu->mcu_ctrl_actuator) {
 		ret = CALL_OISOPS(sensor_peri->mcu->ois, ois_set_af_active, sensor_peri->subdev_mcu, 1);
 		if (ret < 0)
 			err("ois set af active fail");
@@ -859,7 +859,7 @@ void is_sensor_ois_set_deinit_work(struct work_struct *data)
 	sensor_peri = ois->sensor_peri;
 
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-	if (sensor_peri->mcu->mcu_ctrl_actuator) {
+	if (is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu->mcu_ctrl_actuator) {
 		ret = CALL_OISOPS(sensor_peri->mcu->ois, ois_set_af_active, sensor_peri->subdev_mcu, 0);
 		if (ret < 0)
 			err("ois set af active fail");
@@ -2018,7 +2018,7 @@ int is_sensor_peri_s_stream(struct is_device_sensor *device,
 
 #ifdef USE_AF_SLEEP_MODE
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-			if (!(sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
+			if (!(is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
 #endif
 			{
 				if (sensor_peri->actuator && sensor_peri->actuator->actuator_ops) {
@@ -2073,7 +2073,7 @@ int is_sensor_peri_s_stream(struct is_device_sensor *device,
 
 #ifdef USE_AF_SLEEP_MODE
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-			if (!(sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
+			if (!(is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
 #endif
 			{
 				if (sensor_peri->actuator && sensor_peri->actuator->actuator_ops) {
@@ -2088,7 +2088,8 @@ int is_sensor_peri_s_stream(struct is_device_sensor *device,
 			is_sensor_peri_ctl_dual_sync(device, on);
 
 #ifdef USE_HIGH_RES_FLASH_FIRE_BEFORE_STREAM_ON
-		if (sensor_peri->flash != NULL) {
+		if (is_vendor_cfg()->high_res_flash_before_stream &&
+			sensor_peri->flash != NULL) {
 			if (dual_info->mode == IS_DUAL_MODE_NOTHING) {
 				if (sensor_peri->flash->flash_data.high_resolution_flash == true) {
 					ret = is_sensor_flash_fire(sensor_peri, sensor_peri->flash->flash_data.intensity);
@@ -2124,7 +2125,7 @@ int is_sensor_peri_s_stream(struct is_device_sensor *device,
 			/* stream off sequence */
 #ifdef USE_AF_SLEEP_MODE
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-			if (!(sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
+			if (!(is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
 #endif
 			{
 				if (sensor_peri->actuator && sensor_peri->actuator->actuator_ops) {
@@ -2189,7 +2190,7 @@ int is_sensor_peri_s_stream(struct is_device_sensor *device,
 #endif
 #ifdef USE_AF_SLEEP_MODE
 #if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-			if (!(sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
+			if (!(is_vendor_cfg()->tele_ois_af_common && sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
 #endif
 			{
 				if (sensor_peri->actuator && sensor_peri->actuator->actuator_ops) {

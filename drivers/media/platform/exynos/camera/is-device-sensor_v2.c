@@ -53,6 +53,7 @@
 #include "is-device-sensor-peri.h"
 #include "is-vender.h"
 #include "is-vender-specific.h"
+#include "is-vendor-config-runtime.h"
 #include "is-votfmgr.h"
 
 #if defined(QOS_INTCAM)
@@ -325,10 +326,8 @@ struct is_sensor_cfg *is_sensor_g_mode(struct is_device_sensor *device)
 	u32 width, height, framerate, ex_mode, ex_mode_option;
 	struct is_module_enum *module;
 	int deviation;
-#ifdef CAMERA_REAR2_SENSOR_SHIFT_CROP
 	struct is_device_sensor_peri *sensor_peri = NULL;
 	struct is_cis *cis = NULL;
-#endif
 
 	FIMC_BUG_NULL(!device);
 
@@ -359,9 +358,8 @@ struct is_sensor_cfg *is_sensor_g_mode(struct is_device_sensor *device)
 		ex_mode_option);
 
 
-#ifdef USE_EX_MODE_OPTION
 	/* find sensor mode first by w/h, fps range and ex_mode_option */
-	if (ex_mode_option > 0) {
+	if (is_vendor_cfg()->ex_mode_option && ex_mode_option > 0) {
 		for (i = 0; i < cfgs; i++) {
 			if ((cfg_table[i].width == width) && (cfg_table[i].height == height)
 				&& (cfg_table[i].ex_mode == ex_mode_option)) {
@@ -378,7 +376,6 @@ struct is_sensor_cfg *is_sensor_g_mode(struct is_device_sensor *device)
 			}
 		}
 	}
-#endif
 
 	if (!select) {
 		/* find sensor mode by w/h and fps range */
@@ -406,7 +403,7 @@ struct is_sensor_cfg *is_sensor_g_mode(struct is_device_sensor *device)
 	}
 
 #ifdef CAMERA_REAR2_SENSOR_SHIFT_CROP
-	if (device->position == SENSOR_POSITION_REAR2) {
+	if (is_vendor_cfg()->shift_crop && device->position == SENSOR_POSITION_REAR2) {
 		sensor_peri = (struct is_device_sensor_peri *)module->private_data;
 		if (sensor_peri == NULL) {
 			mwarn("sensor_peri is null", device);
@@ -2419,8 +2416,9 @@ int is_sensor_s_input(struct is_device_sensor *device,
 		sensor_peri->subdev_actuator = device->subdev_actuator[device->pdev->id];
 	}
 
-#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-	if (!(sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
+#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU)
+	if (!(is_vendor_cfg()->tele_ois_af_common &&
+		sensor_peri->mcu && sensor_peri->mcu->mcu_ctrl_actuator))
 #endif
 	{
 		if (sensor_peri->actuator
@@ -2494,14 +2492,12 @@ int is_sensor_s_input(struct is_device_sensor *device,
 			sensor_peri->mcu->subdev_aperture = device->mcu->subdev_aperture;
 			sensor_peri->mcu->aperture->sensor_peri = sensor_peri;
 		}
-#ifdef USE_TELE_OIS_AF_COMMON_INTERFACE
-		if (device->mcu->actuator) {
+		if (is_vendor_cfg()->tele_ois_af_common && device->mcu->actuator) {
 			sensor_peri->actuator = device->mcu->actuator;
 			sensor_peri->subdev_actuator = device->mcu->actuator->subdev;
 			sensor_peri->actuator->sensor_peri = sensor_peri;
 			set_bit(IS_SENSOR_ACTUATOR_AVAILABLE, &sensor_peri->peri_state);
 		}
-#endif
 #ifndef CONFIG_CAMERA_USE_INTERNAL_MCU
 		if (i2c_channel < SENSOR_CONTROL_I2C_MAX && device->mcu->ois)
 			sensor_peri->mcu->ois->i2c_lock = &core->i2c_lock[i2c_channel];

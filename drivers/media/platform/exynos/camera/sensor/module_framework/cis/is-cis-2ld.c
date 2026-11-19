@@ -39,6 +39,7 @@
 #include "is-cis-2ld.h"
 #include "is-cis-2ld-setA.h"
 #include "is-helper-i2c.h"
+#include "is-vendor-config-runtime.h"
 
 #define SENSOR_NAME "S5K2LD"
 /* #define DEBUG_2LD_PLL */
@@ -1088,7 +1089,8 @@ int sensor_2ld_cis_mode_change(struct v4l2_subdev *subdev, u32 mode)
 
 #ifdef CAMERA_2LD_SLOW_MOTION_PDAF_OFF
 	/* TEMP PD OFF when slow motion */
-	if (mode == SENSOR_2LD_2016X1134_240FPS) {
+	if (is_vendor_cfg()->slow_motion_pdaf_off &&
+		mode == SENSOR_2LD_2016X1134_240FPS) {
 		ret |= is_sensor_write16(cis->client, 0x6000, 0x0005);
 		ret |= is_sensor_write16(cis->client, 0xFCFC, 0x2000);
 		ret |= is_sensor_write8(cis->client, 0x1AA1, 0x00);

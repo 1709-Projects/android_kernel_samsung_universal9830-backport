@@ -1257,9 +1257,8 @@ void is_vendor_prepare_retention(struct is_core *core, int sensor_id, int positi
 		goto p_err;
 	}
 
-#ifdef CAMERA_USE_COMMON_VDDIO
-	msleep(20);
-#endif
+	if (is_vendor_cfg()->use_common_vddio)
+		msleep(20);
 
 	/* Sensor power on */
 	ret = module->pdata->gpio_cfg(module, scenario, GPIO_SCENARIO_ON);
@@ -2112,13 +2111,13 @@ int is_vender_set_torch(struct camera2_shot *shot)
 		sky81296_torch_ctrl(1);
 #endif
 #if defined(CONFIG_TORCH_CURRENT_CHANGE_SUPPORT) && defined(CONFIG_LEDS_S2MPB02)
-#if defined(LEDS_S2MPB02_ADAPTIVE_MOVIE_CURRENT)
 		info("s2mpb02 adaptive firingPower(%d)\n", shot->ctl.flash.firingPower);
 
-		if (shot->ctl.flash.firingPower == 5)
-			s2mpb02_set_torch_current(true, true, LEDS_S2MPB02_ADAPTIVE_MOVIE_CURRENT);
+		if (shot->ctl.flash.firingPower == 5 &&
+			is_vendor_cfg()->leds_s2mpb02_movie_current)
+			s2mpb02_set_torch_current(true, true,
+				is_vendor_cfg()->leds_s2mpb02_movie_current);
 		else
-#endif
 			s2mpb02_set_torch_current(true, false, 0);
 #endif
 #if defined(CONFIG_TORCH_CURRENT_CHANGE_SUPPORT) && defined(CONFIG_LEDS_RT8547)
@@ -2498,13 +2497,15 @@ int is_vendor_shaking_gpio_on(struct is_vender *vender)
 
 	is_af_move_lens(core);
 
-#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-	if (device2->mcu->mcu_ctrl_actuator) {
+#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU)
+	if (is_vendor_cfg()->tele_ois_af_common && device2->mcu->mcu_ctrl_actuator) {
 		is_vender_mcu_power_on(false);
 		is_ois_init_rear2(core);
 		ret = CALL_OISOPS(device2->mcu->ois, ois_set_af_active, device2->subdev_mcu, 1);
 		if (ret < 0)
 			err("ois set af active fail");
+	} else {
+		is_af_move_lens_rear2(core);
 	}
 #else
 	is_af_move_lens_rear2(core);
@@ -2561,13 +2562,15 @@ int is_vendor_shaking_gpio_off(struct is_vender *vender)
 		goto p_err;
 	}
 
-#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU) && defined(USE_TELE_OIS_AF_COMMON_INTERFACE)
-	if (device2->mcu->mcu_ctrl_actuator) {
-		ret = CALL_OISOPS(device2->mcu->ois, ois_set_af_active, device2->subdev_mcu, 0);
-		if (ret < 0)
-			err("ois set af active fail");
+#if defined(CONFIG_CAMERA_USE_INTERNAL_MCU)
+	if (is_vendor_cfg()->tele_ois_af_common) {
+		if (device2->mcu->mcu_ctrl_actuator) {
+			ret = CALL_OISOPS(device2->mcu->ois, ois_set_af_active, device2->subdev_mcu, 0);
+			if (ret < 0)
+				err("ois set af active fail");
+		}
+		is_vender_mcu_power_off(false);
 	}
-	is_vender_mcu_power_off(false);
 #endif
 
 	ret = module_pdata->gpio_cfg(module_rear, SENSOR_SCENARIO_OIS_FACTORY, GPIO_SCENARIO_OFF);
