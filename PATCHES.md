@@ -3,6 +3,13 @@
 Fixes are taken from upstream 6.18.y (`v6.18.50` to `v6.18.64`).
 `UPSTREAM:` is a clean cherry-pick, `BACKPORT:` is adapted to 4.19.
 
+## Unified device support
+
+One Image runs on x1s, x1slte, y2s, y2slte, z3s, c1s, c1slte, c2s, c2slte, and r8s.
+The kernel selects the matching panel, display power/VRR/doze path, camera vendor
+configuration, touch controller, fingerprint driver, and sensorhub factory from the
+device tree model at boot, with `androidboot.device` as the fallback.
+
 ## UPSTREAM
 
 | Patch | 6.18.y | Description |
