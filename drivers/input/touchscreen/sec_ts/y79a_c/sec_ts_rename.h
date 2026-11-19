@@ -1,0 +1,68 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Symbol remapping so the Y79A and Y79A_C touch drivers can both be
+ * built into the unified kernel.  The two drivers are complete but
+ * independent implementations and otherwise define the same globals.
+ */
+#ifndef __SEC_TS_Y79A_C_RENAME_H
+#define __SEC_TS_Y79A_C_RENAME_H
+
+#define g_ts y79a_c_g_ts
+#define get_aod_active_area y79a_c_get_aod_active_area
+#define get_cmoffset_dump_all y79a_c_get_cmoffset_dump_all
+#define get_fod_info y79a_c_get_fod_info
+#define get_miscal_dump y79a_c_get_miscal_dump
+#define get_selftest_fail_hist_dump_all y79a_c_get_selftest_fail_hist_dump_all
+#define get_tsp_nvm_data y79a_c_get_tsp_nvm_data
+#define get_tsp_nvm_data_by_size y79a_c_get_tsp_nvm_data_by_size
+#define location_detect y79a_c_location_detect
+#define minority_report_check_count y79a_c_minority_report_check_count
+#define minority_report_sync_latest_value y79a_c_minority_report_sync_latest_value
+#define sec_tclm_data_read y79a_c_sec_tclm_data_read
+#define sec_tclm_data_write y79a_c_sec_tclm_data_write
+#define sec_tclm_execute_force_calibration y79a_c_sec_tclm_execute_force_calibration
+#define sec_tclm_parse_dt y79a_c_sec_tclm_parse_dt
+#define sec_ts_bl_update y79a_c_sec_ts_bl_update
+#define sec_ts_check_custom_library y79a_c_sec_ts_check_custom_library
+#define sec_ts_check_firmware_version y79a_c_sec_ts_check_firmware_version
+#define sec_ts_delay y79a_c_sec_ts_delay
+#define sec_ts_firmware_update_on_hidden_menu y79a_c_sec_ts_firmware_update_on_hidden_menu
+#define sec_ts_firmware_update_on_probe y79a_c_sec_ts_firmware_update_on_probe
+#define sec_ts_fix_tmode y79a_c_sec_ts_fix_tmode
+#define sec_ts_fn_init y79a_c_sec_ts_fn_init
+#define sec_ts_fn_remove y79a_c_sec_ts_fn_remove
+#define sec_ts_get_saved_cmoffset y79a_c_sec_ts_get_saved_cmoffset
+#define sec_ts_get_touch_function y79a_c_sec_ts_get_touch_function
+#define sec_ts_i2c_read y79a_c_sec_ts_i2c_read
+#define sec_ts_i2c_write y79a_c_sec_ts_i2c_write
+#define sec_ts_ioctl_init y79a_c_sec_ts_ioctl_init
+#define sec_ts_ioctl_remove y79a_c_sec_ts_ioctl_remove
+#define sec_ts_locked_release_all_finger y79a_c_sec_ts_locked_release_all_finger
+#define sec_ts_p2p_tmode y79a_c_sec_ts_p2p_tmode
+#define sec_ts_power y79a_c_sec_ts_power
+#define sec_ts_print_info y79a_c_sec_ts_print_info
+#define sec_ts_read_calibration_report y79a_c_sec_ts_read_calibration_report
+#define sec_ts_read_information y79a_c_sec_ts_read_information
+#define sec_ts_reinit y79a_c_sec_ts_reinit
+#define sec_ts_release_tmode y79a_c_sec_ts_release_tmode
+#define sec_ts_run_rawdata_all y79a_c_sec_ts_run_rawdata_all
+#define sec_ts_set_aod_rect y79a_c_sec_ts_set_aod_rect
+#define sec_ts_set_cover_type y79a_c_sec_ts_set_cover_type
+#define sec_ts_set_custom_library y79a_c_sec_ts_set_custom_library
+#define sec_ts_set_external_noise_mode y79a_c_sec_ts_set_external_noise_mode
+#define sec_ts_set_fod_rect y79a_c_sec_ts_set_fod_rect
+#define sec_ts_set_grip_type y79a_c_sec_ts_set_grip_type
+#define sec_ts_set_lowpowermode y79a_c_sec_ts_set_lowpowermode
+#define sec_ts_set_press_property y79a_c_sec_ts_set_press_property
+#define sec_ts_set_temp y79a_c_sec_ts_set_temp
+#define sec_ts_set_touch_function y79a_c_sec_ts_set_touch_function
+#define sec_ts_start_device y79a_c_sec_ts_start_device
+#define sec_ts_stop_device y79a_c_sec_ts_stop_device
+#define sec_ts_unlocked_release_all_finger y79a_c_sec_ts_unlocked_release_all_finger
+#define sec_ts_wait_for_ready y79a_c_sec_ts_wait_for_ready
+#define set_grip_data_to_ic y79a_c_set_grip_data_to_ic
+#define tsp_close y79a_c_tsp_close
+#define tsp_info y79a_c_tsp_info
+#define tsp_open y79a_c_tsp_open
+
+#endif

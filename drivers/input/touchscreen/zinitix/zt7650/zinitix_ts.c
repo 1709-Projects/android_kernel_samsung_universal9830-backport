@@ -870,7 +870,7 @@ extern int get_lcd_attached(char *mode);
 int get_lcd_info(char *arg);
 #endif
 void zt_print_info(struct zt_ts_info *info);
-bool shutdown_is_on_going_tsp;
+bool zinitix_shutdown_is_on_going_tsp;
 static int ts_set_touchmode(u16 value);
 
 #if ESD_TIMER_INTERVAL
@@ -1349,7 +1349,7 @@ static void ts_set_utc_sponge(struct zt_ts_info *info)
 		input_err(true, &info->client->dev, "%s: Failed to write sponge\n", __func__);
 }
 
-int get_fod_info(struct zt_ts_info *info)
+static int get_fod_info(struct zt_ts_info *info)
 {
 	u8 data[6] = {0, };
 	int ret, i;
@@ -1369,7 +1369,7 @@ int get_fod_info(struct zt_ts_info *info)
 	return ret;
 }
 
-int get_aod_active_area(struct zt_ts_info *info)
+static int get_aod_active_area(struct zt_ts_info *info)
 {
 	int ret;
 
@@ -1666,7 +1666,7 @@ int get_zt_tsp_nvm_data(struct zt_ts_info *info, u8 addr, u8 *values, u16 length
 int set_zt_tsp_nvm_data(struct zt_ts_info *info, u8 addr, u8 *values, u16 length);
 #endif
 
-void location_detect(struct zt_ts_info *info, char *loc, int x, int y);
+static void location_detect(struct zt_ts_info *info, char *loc, int x, int y);
 
 #ifdef USE_MISC_DEVICE
 static long ts_misc_fops_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
@@ -3441,7 +3441,7 @@ void trustedui_mode_off(void) {
 EXPORT_SYMBOL(trustedui_mode_off);
 #endif
 
-void location_detect(struct zt_ts_info *info, char *loc, int x, int y)
+static void location_detect(struct zt_ts_info *info, char *loc, int x, int y)
 {
 	memset(loc, 0x00, 7);
 	strncpy(loc, "xy:", 3);
@@ -3855,7 +3855,7 @@ fail_late_resume:
 	cancel_delayed_work(&info->work_print_info);
 	info->print_info_cnt_open = 0;
 	info->print_info_cnt_release = 0;
-	if (!shutdown_is_on_going_tsp)
+	if (!zinitix_shutdown_is_on_going_tsp)
 		schedule_work(&info->work_print_info.work);
 
 	return 0;
@@ -9760,7 +9760,7 @@ static void touch_print_info_work(struct work_struct *work)
 
 	zt_print_info(info);
 
-	if (!shutdown_is_on_going_tsp)
+	if (!zinitix_shutdown_is_on_going_tsp)
 		schedule_delayed_work(&info->work_print_info, msecs_to_jiffies(TOUCH_PRINT_INFO_DWORK_TIME));
 }
 
@@ -10302,7 +10302,7 @@ void zt_ts_shutdown(struct i2c_client *client)
 	struct zt_ts_info *info = i2c_get_clientdata(client);
 
 	input_info(true, &client->dev, "%s++\n",__func__);
-	shutdown_is_on_going_tsp = true;
+	zinitix_shutdown_is_on_going_tsp = true;
 	disable_irq(info->irq);
 	mutex_lock(&info->work_lock);
 #if ESD_TIMER_INTERVAL

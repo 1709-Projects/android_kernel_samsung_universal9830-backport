@@ -6,3 +6,6 @@ else
 endif
 ccflags-$(CONFIG_SAMSUNG_TUI)	+= -Idrivers/misc/tui
 ccflags-y += -Wformat
+
+# Unified kernel: keep Y79A_C symbols distinct from the Y79A driver.
+ccflags-y += -include $(srctree)/drivers/input/touchscreen/sec_ts/y79a_c/sec_ts_rename.h

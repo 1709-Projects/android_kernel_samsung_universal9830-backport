@@ -11,6 +11,7 @@
  */
 
 #include "sec_ts.h"
+#include <linux/exynos9830-unified.h>
 
 struct sec_ts_data *tsp_info;
 
@@ -3937,6 +3938,12 @@ static int __init sec_ts_init(void)
 	}
 #endif
 	pr_err("%s %s\n", SECLOG, __func__);
+
+	if (!exynos9830_is_cnt_touch()) {
+		pr_info("%s %s: not Note20 family, skipping Y79A_C driver\n",
+				SECLOG, __func__);
+		return 0;
+	}
 
 	return i2c_add_driver(&sec_ts_driver);
 }
