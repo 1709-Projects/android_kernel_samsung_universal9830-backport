@@ -13,6 +13,7 @@
  *
  */
 #include <linux/kernel.h>
+#include "factory_rename_hst.h"
 #include "../ssp.h"
 
 /*************************************************************************/

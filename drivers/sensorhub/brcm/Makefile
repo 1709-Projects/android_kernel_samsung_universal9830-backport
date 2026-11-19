@@ -34,6 +34,7 @@ obj-$(CONFIG_SENSORS_SSP_YAS537)	+= factory/magnetic_yas537.o
 obj-$(CONFIG_SENSORS_SSP_YAS539)	+= factory/magnetic_yas539.o
 obj-$(CONFIG_SENSORS_SSP_AK09911)	+= factory/magnetic_ak09911.o
 obj-$(CONFIG_SENSORS_SSP_MAGNETIC_COMMON)	+= factory/magnetic_common.o
+obj-$(CONFIG_SENSORS_FACTORY_UNIFIED)	+= factory/factory_dispatch.o
 
 obj-$(CONFIG_SENSORS_SSP_TMG399x)	+= factory/light_tmg399x.o factory/gesture_tmg399x.o
 obj-$(CONFIG_SENSORS_SSP_TMD4903)	+= factory/light_tmg399x.o factory/gesture_tmg399x.o

@@ -1,3 +1,4 @@
+#include "factory_rename_generic.h"
 #include "../ssp.h"
 #include "sensors.h"
 

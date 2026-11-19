@@ -12,6 +12,7 @@
  *  GNU General Public License for more details.
  *
  */
+#include "factory_rename_ak.h"
 #include "../ssp.h"
 #include "sensors.h"
 

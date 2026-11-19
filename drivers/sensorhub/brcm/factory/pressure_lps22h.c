@@ -12,6 +12,7 @@
  *  GNU General Public License for more details.
  *
  */
+#include "factory_rename_hst.h"
 #include "../ssp.h"
 
 #define	VENDOR		"STM"

@@ -1,0 +1,50 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Symbol remapping for the unified sensor factory dispatch.
+ * Only active when both factory implementations are built in.
+ */
+#ifndef __FACTORY_RENAME_HST_H
+#define __FACTORY_RENAME_HST_H
+
+#ifdef CONFIG_SENSORS_FACTORY_UNIFIED
+
+#define accel_open_calibration hst_accel_open_calibration
+#define initialize_accel_factorytest hst_initialize_accel_factorytest
+#define remove_accel_factorytest hst_remove_accel_factorytest
+#define set_AccelCalibrationInfoData hst_set_AccelCalibrationInfoData
+#define set_accel_cal hst_set_accel_cal
+#define gyro_open_calibration hst_gyro_open_calibration
+#define initialize_gyro_factorytest hst_initialize_gyro_factorytest
+#define remove_gyro_factorytest hst_remove_gyro_factorytest
+#define save_gyro_caldata hst_save_gyro_caldata
+#define send_vdis_flag hst_send_vdis_flag
+#define set_GyroCalibrationInfoData hst_set_GyroCalibrationInfoData
+#define set_gyro_cal hst_set_gyro_cal
+#define get_hw_offset hst_get_hw_offset
+#define initialize_magnetic_factorytest hst_initialize_magnetic_factorytest
+#define initialize_magnetic_sensor hst_initialize_magnetic_sensor
+#define load_magnetic_cal_param_from_nvm hst_load_magnetic_cal_param_from_nvm
+#define mag_open_hwoffset hst_mag_open_hwoffset
+#define mag_store_hwoffset hst_mag_store_hwoffset
+#define remove_magnetic_factorytest hst_remove_magnetic_factorytest
+#define save_magnetic_cal_param_to_nvm hst_save_magnetic_cal_param_to_nvm
+#define set_hw_offset hst_set_hw_offset
+#define set_magnetic_cal_param_to_ssp hst_set_magnetic_cal_param_to_ssp
+#define initialize_light_factorytest hst_initialize_light_factorytest
+#define initialize_light_sensor hst_initialize_light_sensor
+#define remove_light_factorytest hst_remove_light_factorytest
+#define set_lcd_panel_type_to_ssp hst_set_lcd_panel_type_to_ssp
+#define set_light_cal_param_to_ssp hst_set_light_cal_param_to_ssp
+#define initialize_prox_factorytest hst_initialize_prox_factorytest
+#define load_prox_cal_from_nvm hst_load_prox_cal_from_nvm
+#define proximity_save_calibration hst_proximity_save_calibration
+#define remove_prox_factorytest hst_remove_prox_factorytest
+#define set_prox_cal_to_ssp hst_set_prox_cal_to_ssp
+#define initialize_pressure_factorytest hst_initialize_pressure_factorytest
+#define pressure_open_calibration hst_pressure_open_calibration
+#define remove_pressure_factorytest hst_remove_pressure_factorytest
+#define get_fuserom_data hst_get_fuserom_data
+
+#endif
+
+#endif

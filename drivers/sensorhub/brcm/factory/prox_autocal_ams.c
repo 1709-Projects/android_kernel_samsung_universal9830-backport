@@ -1,3 +1,4 @@
+#include "factory_rename_hst.h"
 #include "../ssp.h"
 
 #define	VENDOR		"AMS"

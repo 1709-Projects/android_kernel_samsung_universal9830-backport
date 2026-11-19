@@ -1,0 +1,49 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/*
+ * Symbol remapping for the unified sensor factory dispatch.
+ * Only active when both factory implementations are built in.
+ */
+#ifndef __FACTORY_RENAME_GENERIC_H
+#define __FACTORY_RENAME_GENERIC_H
+
+#ifdef CONFIG_SENSORS_FACTORY_UNIFIED
+
+#define accel_open_calibration gen_accel_open_calibration
+#define initialize_accel_factorytest gen_initialize_accel_factorytest
+#define remove_accel_factorytest gen_remove_accel_factorytest
+#define set_AccelCalibrationInfoData gen_set_AccelCalibrationInfoData
+#define set_accel_cal gen_set_accel_cal
+#define gyro_open_calibration gen_gyro_open_calibration
+#define initialize_gyro_factorytest gen_initialize_gyro_factorytest
+#define remove_gyro_factorytest gen_remove_gyro_factorytest
+#define save_gyro_caldata gen_save_gyro_caldata
+#define send_vdis_flag gen_send_vdis_flag
+#define set_GyroCalibrationInfoData gen_set_GyroCalibrationInfoData
+#define set_gyro_cal gen_set_gyro_cal
+#define get_hw_offset gen_get_hw_offset
+#define initialize_magnetic_factorytest gen_initialize_magnetic_factorytest
+#define initialize_magnetic_sensor gen_initialize_magnetic_sensor
+#define load_magnetic_cal_param_from_nvm gen_load_magnetic_cal_param_from_nvm
+#define mag_open_hwoffset gen_mag_open_hwoffset
+#define mag_store_hwoffset gen_mag_store_hwoffset
+#define remove_magnetic_factorytest gen_remove_magnetic_factorytest
+#define save_magnetic_cal_param_to_nvm gen_save_magnetic_cal_param_to_nvm
+#define set_hw_offset gen_set_hw_offset
+#define set_magnetic_cal_param_to_ssp gen_set_magnetic_cal_param_to_ssp
+#define initialize_light_factorytest gen_initialize_light_factorytest
+#define initialize_light_sensor gen_initialize_light_sensor
+#define remove_light_factorytest gen_remove_light_factorytest
+#define set_lcd_panel_type_to_ssp gen_set_lcd_panel_type_to_ssp
+#define set_light_cal_param_to_ssp gen_set_light_cal_param_to_ssp
+#define initialize_prox_factorytest gen_initialize_prox_factorytest
+#define load_prox_cal_from_nvm gen_load_prox_cal_from_nvm
+#define proximity_save_calibration gen_proximity_save_calibration
+#define remove_prox_factorytest gen_remove_prox_factorytest
+#define set_prox_cal_to_ssp gen_set_prox_cal_to_ssp
+#define initialize_pressure_factorytest gen_initialize_pressure_factorytest
+#define pressure_open_calibration gen_pressure_open_calibration
+#define remove_pressure_factorytest gen_remove_pressure_factorytest
+
+#endif
+
+#endif

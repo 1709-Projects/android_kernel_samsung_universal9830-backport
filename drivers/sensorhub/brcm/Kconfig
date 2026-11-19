@@ -793,4 +793,13 @@ config SENSORS_LPS25H
 	bool "barometer lps25hhtr"
 	default y if SENSORS_DYNAMIC_SENSORLIST
 
+config SENSORS_FACTORY_UNIFIED
+	bool "Runtime sensor factory dispatch for unified kernels"
+	depends on SENSORS_DYNAMIC_SENSORLIST && SENSORS_SSP_LSM6DSO && SENSORS_SSP_MAGNETIC_COMMON
+	default n
+	help
+	  Build both the dynamic sensor factory and the SSP chip factory
+	  implementations, and select the right one from the device tree
+	  model at runtime.
+
 source "drivers/sensorhub/brcm/bbdpl/Kconfig"
