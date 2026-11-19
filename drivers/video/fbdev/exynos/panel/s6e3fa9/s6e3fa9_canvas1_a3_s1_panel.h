@@ -11,6 +11,7 @@
  */
 
 #ifndef __S6E3FA9_CANVAS1_A3_S1_PANEL_H__
+#include <linux/exynos9830-unified.h>
 #define __S6E3FA9_CANVAS1_A3_S1_PANEL_H__
 
 #include "../panel.h"
@@ -1006,6 +1007,9 @@ struct common_panel_info s6e3fa9_canvas1_a3_s1_panel_info = {
 
 static int __init s6e3fa9_canvas1_a3_s1_panel_init(void)
 {
+	if (!exynos9830_panel_is_c1())
+		return 0;
+
 	register_common_panel(&s6e3fa9_canvas1_a3_s1_panel_info);
 
 	return 0;

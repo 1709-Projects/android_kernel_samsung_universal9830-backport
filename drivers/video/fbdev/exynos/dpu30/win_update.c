@@ -10,6 +10,7 @@
 */
 
 #include <video/mipi_display.h>
+#include <linux/exynos9830-unified.h>
 
 #include "./panels/exynos_panel_drv.h"
 #include "decon.h"
@@ -589,10 +590,11 @@ static int dpu_update_display_mode(struct decon_device *decon,
 
 #if defined(CONFIG_DECON_VRR_MODULATION)
 	/*
-	 * update refresh-rate s/w modulation count
+	 * update refresh-rate s/w modulation count only on the LTPO
+	 * panel that actually drives VRR modulation.
 	 */
-	decon->vsync.div_count =
-		exynos_panel_div_count(lcd_info);
+	decon->vsync.div_count = exynos9830_display_use_vrr_mod() ?
+		exynos_panel_div_count(lcd_info) : 1;
 #endif
 
 #if defined(CONFIG_DECON_BTS_VRR_ASYNC)

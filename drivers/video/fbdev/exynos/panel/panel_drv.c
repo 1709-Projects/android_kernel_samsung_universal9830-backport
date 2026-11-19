@@ -61,6 +61,7 @@
 #include <linux/tdmb_notifier.h>
 #endif
 #include <linux/input/sec_cmd.h>
+#include <linux/exynos9830-unified.h>
 
 #ifdef CONFIG_DYNAMIC_FREQ
 #include "./df/dynamic_freq.h"
@@ -336,7 +337,6 @@ int panel_set_gpio_irq(struct panel_gpio *gpio, bool enable)
 	return 0;
 }
 
-#ifndef CONFIG_PANEL_DECON_BOARD
 static int panel_regulator_enable(struct panel_device *panel)
 {
 	struct panel_regulator *regulator = panel->regulator;
@@ -383,7 +383,6 @@ static int panel_regulator_disable(struct panel_device *panel)
 
 	return 0;
 }
-#endif
 
 static int panel_regulator_set_voltage(struct panel_device *panel, int state)
 {
@@ -530,7 +529,7 @@ static inline int panel_regulator_set_short_detection(struct panel_device *panel
 #endif
 
 #ifdef CONFIG_PANEL_DECON_BOARD
-int __set_panel_power(struct panel_device *panel, int power)
+static int __set_panel_power_board(struct panel_device *panel, int power)
 {
 	if (panel->state.power == power) {
 		panel_warn("same status.. skip..\n");
@@ -551,7 +550,13 @@ int __set_panel_power(struct panel_device *panel, int power)
 	return 0;
 }
 #else
-int __set_panel_power(struct panel_device *panel, int power)
+static inline int __set_panel_power_board(struct panel_device *panel, int power)
+{
+	return 0;
+}
+#endif
+
+static int __set_panel_power_legacy(struct panel_device *panel, int power)
 {
 	int ret = 0;
 	struct panel_gpio *gpio = panel->gpio;
@@ -589,7 +594,13 @@ int __set_panel_power(struct panel_device *panel, int power)
 
 	return 0;
 }
-#endif
+
+int __set_panel_power(struct panel_device *panel, int power)
+{
+	if (exynos9830_display_use_decon_board())
+		return __set_panel_power_board(panel, power);
+	return __set_panel_power_legacy(panel, power);
+}
 
 static int __panel_seq_display_on(struct panel_device *panel)
 {
@@ -1914,7 +1925,8 @@ int panel_probe(struct panel_device *panel)
 	panel_data->props.vrr_origin_mode = VRR_NORMAL_MODE;
 	panel_data->props.vrr_origin_idx = 0;
 #ifdef CONFIG_PANEL_VRR_BRIDGE
-	panel_data->props.vrr_bridge_enable = true;
+	panel_data->props.vrr_bridge_enable =
+		exynos9830_display_use_vrr_bridge();
 #endif
 
 #if defined(CONFIG_SEC_FACTORY) && defined(CONFIG_SUPPORT_FAST_DISCHARGE)
@@ -2040,7 +2052,8 @@ int panel_probe(struct panel_device *panel)
 		if (panel_data->panel_dim_info[i] == NULL)
 			continue;
 
-		if (panel_data->panel_dim_info[i]->dim_flash_on) {
+		if (exynos9830_display_use_dim_flash() &&
+				panel_data->panel_dim_info[i]->dim_flash_on) {
 			panel_data->props.dim_flash_on = true;
 			panel_info("dim_flash : on\n");
 			break;
@@ -2803,7 +2816,8 @@ static int panel_set_display_mode(struct panel_device *panel, void *arg)
 
 #ifdef CONFIG_PANEL_VRR_BRIDGE
 	panel->panel_data.props.target_panel_mode = panel_mode;
-	if (panel_vrr_bridge_changeable(panel) &&
+	if (exynos9830_display_use_vrr_bridge() &&
+		panel_vrr_bridge_changeable(panel) &&
 		!panel_display_mode_is_mres_mode_changed(panel, panel_mode)) {
 		/* run vrr-bridge thread */
 		ret = panel_run_vrr_bridge_thread(panel);
@@ -3377,15 +3391,18 @@ static int panel_drv_set_gpios(struct panel_device *panel)
 	}
 
 #ifdef CONFIG_PANEL_DECON_BOARD
-	rst_val = of_gpio_get_value("gpio_lcd_rst");
-#else
-	if (!gpio_is_valid(gpio[PANEL_GPIO_RESET].num)) {
-		panel_err("gpio(%s) not exist\n",
-				panel_gpio_names[PANEL_GPIO_RESET]);
-		return -EINVAL;
-	}
-	rst_val = gpio_get_value(gpio[PANEL_GPIO_RESET].num);
+	if (exynos9830_display_use_decon_board()) {
+		rst_val = of_gpio_get_value("gpio_lcd_rst");
+	} else
 #endif
+	{
+		if (!gpio_is_valid(gpio[PANEL_GPIO_RESET].num)) {
+			panel_err("gpio(%s) not exist\n",
+					panel_gpio_names[PANEL_GPIO_RESET]);
+			return -EINVAL;
+		}
+		rst_val = gpio_get_value(gpio[PANEL_GPIO_RESET].num);
+	}
 
 	if (!gpio_is_valid(gpio[PANEL_GPIO_DISP_DET].num)) {
 		panel_err("gpio(%s) not exist\n",
@@ -3430,20 +3447,22 @@ static int panel_drv_set_gpios(struct panel_device *panel)
 		panel->state.power = PANEL_POWER_ON;
 		panel->state.disp_on = PANEL_DISPLAY_ON;
 #ifdef CONFIG_PANEL_DECON_BOARD
-		of_gpio_set_value("gpio_lcd_rst", 1);
-#else
-		gpio_direction_output(gpio[PANEL_GPIO_RESET].num, 1);
+		if (exynos9830_display_use_decon_board())
+			of_gpio_set_value("gpio_lcd_rst", 1);
+		else
 #endif
+			gpio_direction_output(gpio[PANEL_GPIO_RESET].num, 1);
 	} else {
 		panel->state.connect_panel = PANEL_DISCONNECT;
 		panel->state.cur_state = PANEL_STATE_OFF;
 		panel->state.power = PANEL_POWER_OFF;
 		panel->state.disp_on = PANEL_DISPLAY_OFF;
 #ifdef CONFIG_PANEL_DECON_BOARD
-		of_gpio_set_value("gpio_lcd_rst", 0);
-#else
-		gpio_direction_output(gpio[PANEL_GPIO_RESET].num, 0);
+		if (exynos9830_display_use_decon_board())
+			of_gpio_set_value("gpio_lcd_rst", 0);
+		else
 #endif
+			gpio_direction_output(gpio[PANEL_GPIO_RESET].num, 0);
 	}
 	panel_send_ubconn_notify(panel->state.connected == PANEL_STATE_OK ?
 		PANEL_EVENT_UB_CON_CONNECTED : PANEL_EVENT_UB_CON_DISCONNECTED);
@@ -3460,14 +3479,20 @@ static int panel_drv_set_gpios(struct panel_device *panel)
 }
 
 #ifdef CONFIG_PANEL_DECON_BOARD
-static int panel_drv_set_regulators(struct panel_device *panel)
+static int panel_drv_set_regulators_board(struct panel_device *panel)
 {
 	run_list(panel->dev, "panel_power_enable");
 
 	return 0;
 }
 #else
-static int panel_drv_set_regulators(struct panel_device *panel)
+static inline int panel_drv_set_regulators_board(struct panel_device *panel)
+{
+	return 0;
+}
+#endif
+
+static int panel_drv_set_regulators_legacy(struct panel_device *panel)
 {
 	int ret;
 
@@ -3497,7 +3522,13 @@ static int panel_drv_set_regulators(struct panel_device *panel)
 
 	return 0;
 }
-#endif
+
+static int panel_drv_set_regulators(struct panel_device *panel)
+{
+	if (exynos9830_display_use_decon_board())
+		return panel_drv_set_regulators_board(panel);
+	return panel_drv_set_regulators_legacy(panel);
+}
 
 static int of_get_panel_gpio(struct device_node *np, struct panel_gpio *gpio)
 {

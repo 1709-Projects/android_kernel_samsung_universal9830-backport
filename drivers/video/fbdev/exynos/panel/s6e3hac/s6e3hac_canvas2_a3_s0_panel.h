@@ -11,6 +11,7 @@
  */
 
 #ifndef __S6E3HAC_CANVAS2_A3_S0_PANEL_H__
+#include <linux/exynos9830-unified.h>
 #define __S6E3HAC_CANVAS2_A3_S0_PANEL_H__
 
 #include "../panel.h"
@@ -3970,6 +3971,9 @@ struct common_panel_info s6e3hac_canvas2_a3_s0_panel_info = {
 
 static int __init s6e3hac_canvas2_a3_s0_panel_init(void)
 {
+	if (!exynos9830_panel_is_c2())
+		return 0;
+
 	register_common_panel(&s6e3hac_canvas2_a3_s0_rev40_panel_info);
 	register_common_panel(&s6e3hac_canvas2_a3_s0_rev50_panel_info);
 	register_common_panel(&s6e3hac_canvas2_a3_s0_rev52_panel_info);

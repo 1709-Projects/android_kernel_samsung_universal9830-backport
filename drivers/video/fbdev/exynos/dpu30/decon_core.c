@@ -10,6 +10,7 @@
 */
 
 #include <linux/kernel.h>
+#include <linux/exynos9830-unified.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/interrupt.h>
@@ -892,7 +893,8 @@ retry_enable:
 			decon_state_names[decon->state]);
 
 #ifdef CONFIG_EXYNOS_DOZE_FIRST_FRAME_BLACK
-	decon_doze_first_frame_black(decon, prev_state, next_state);
+	if (exynos9830_display_use_doze_first_frame_black())
+		decon_doze_first_frame_black(decon, prev_state, next_state);
 #endif
 out:
 	mutex_unlock(&decon->lock);
@@ -1143,7 +1145,8 @@ int decon_doze_suspend(struct decon_device *decon)
 			decon_state_names[decon->state]);
 
 #ifdef CONFIG_EXYNOS_DOZE_FIRST_FRAME_BLACK
-	decon_doze_first_frame_black(decon, prev_state, next_state);
+	if (exynos9830_display_use_doze_first_frame_black())
+		decon_doze_first_frame_black(decon, prev_state, next_state);
 #endif
 out:
 	mutex_unlock(&decon->lock);
@@ -2406,6 +2409,9 @@ static int decon_set_mask_layer(struct decon_device *decon, struct decon_reg_dat
 {
 	int ret = 0;
 	struct mask_layer_data req_data;
+
+	if (!exynos9830_display_use_mask_layer())
+		return 0;
 
 	if (decon->dt.out_type != DECON_OUT_DSI)
 		return 0;
@@ -3918,7 +3924,8 @@ add_new_regs:
 	regs->idx = decon->wc_idx;
 	kthread_queue_work(&decon->up.worker, &decon->up.work);
 #ifdef CONFIG_SUPPORT_MASK_LAYER
-	decon_wait_mask_layer_trigger(decon);
+	if (exynos9830_display_use_mask_layer())
+		decon_wait_mask_layer_trigger(decon);
 #endif
 
 	/**

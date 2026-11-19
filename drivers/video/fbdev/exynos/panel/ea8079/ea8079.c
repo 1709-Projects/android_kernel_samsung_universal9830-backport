@@ -289,7 +289,7 @@ static int getidx_acl_dim_onoff_table(struct maptbl *tbl)
 	return maptbl_index(tbl, 0,
 			 panel_bl->props.mask_layer_br_hook == MASK_LAYER_HOOK_ON ? false : true , 0);
 #else
-	return maptbl_index(tbl, 0, true : 0 , 0);
+	return maptbl_index(tbl, 0, true, 0);
 #endif
 }
 

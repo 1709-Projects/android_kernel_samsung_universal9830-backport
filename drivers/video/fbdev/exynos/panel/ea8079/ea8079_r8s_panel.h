@@ -11,6 +11,7 @@
  */
 
 #ifndef __EA8079_R8S_PANEL_H__
+#include <linux/exynos9830-unified.h>
 #define __EA8079_R8S_PANEL_H__
 
 #include "../panel.h"
@@ -1099,6 +1100,9 @@ struct common_panel_info ea8079_r8s_panel_info = {
 
 static int __init ea8079_r8s_panel_init(void)
 {
+	if (!exynos9830_panel_is_r8())
+		return 0;
+
 	register_common_panel(&ea8079_r8s_dv_panel_info);
 	register_common_panel(&ea8079_r8s_panel_info);
 

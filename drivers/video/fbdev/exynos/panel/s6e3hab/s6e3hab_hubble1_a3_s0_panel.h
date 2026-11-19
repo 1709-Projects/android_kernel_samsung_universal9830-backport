@@ -11,6 +11,7 @@
  */
 
 #ifndef __S6E3HAB_HUBBLE1_A3_S0_PANEL_H__
+#include <linux/exynos9830-unified.h>
 #define __S6E3HAB_HUBBLE1_A3_S0_PANEL_H__
 #include "../panel.h"
 #include "../panel_drv.h"
@@ -4435,6 +4436,9 @@ struct common_panel_info s6e3hab_hubble1_a3_s0_default_rev03_panel_info = {
 
 static int __init s6e3hab_hubble1_a3_s0_panel_init(void)
 {
+	if (!exynos9830_panel_is_s20() && !exynos9830_panel_is_c1())
+		return 0;
+
 	register_common_panel(&s6e3hab_hubble1_a3_s0_preliminary_osc_96_5m_panel_info);
 	register_common_panel(&s6e3hab_hubble1_a3_s0_preliminary_panel_info);
 	register_common_panel(&s6e3hab_hubble1_a3_s0_default_osc_96_5m_panel_info);

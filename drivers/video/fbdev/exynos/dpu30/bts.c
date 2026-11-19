@@ -10,6 +10,7 @@
  */
 
 #include "decon.h"
+#include <linux/exynos9830-unified.h>
 #include "dpp.h"
 #include "format.h"
 
@@ -471,7 +472,8 @@ void dpu_bts_calc_bw(struct decon_device *decon, struct decon_reg_data *regs)
 
 	memset(&bts_info, 0, sizeof(struct bts_decon_info));
 #if defined(CONFIG_DECON_BTS_VRR_ASYNC)
-	if (decon->dt.out_type == DECON_OUT_DSI) {
+	if (exynos9830_display_use_bts_vrr_async() &&
+			decon->dt.out_type == DECON_OUT_DSI) {
 		if ((decon->bts.fps < decon->bts.next_fps) ||
 			(decon->bts.fps > decon->bts.next_fps &&
 			 decon->bts.next_fps_vsync_count <= decon->vsync.count)) {

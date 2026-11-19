@@ -11,6 +11,7 @@
  */
 
 #ifndef __EA8076_R8S_PRE_PANEL_H__
+#include <linux/exynos9830-unified.h>
 #define __EA8076_R8S_PRE_PANEL_H__
 
 #include "../panel.h"
@@ -587,6 +588,9 @@ struct common_panel_info ea8076_r8s_pre_panel_info = {
 
 static int __init ea8076_r8s_pre_panel_init(void)
 {
+	if (!exynos9830_panel_is_r8())
+		return 0;
+
 	register_common_panel(&ea8076_r8s_pre_panel_info);
 
 	return 0;
