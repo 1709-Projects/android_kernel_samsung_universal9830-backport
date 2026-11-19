@@ -58,7 +58,8 @@
 #ifdef CONFIG_AMS_OPTICAL_SENSOR_EOL_MODE
 #if defined(CONFIG_LEDS_S2MPB02)
 #include <linux/leds-s2mpb02.h>
-#elif defined(CONFIG_LEDS_RT8547)
+#endif
+#if defined(CONFIG_LEDS_RT8547)
 #include <linux/leds-rt8547.h>
 #endif
 #include <linux/pwm.h>
@@ -2408,49 +2409,57 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 	data->eol_enable = 1;
 	data->eol_result_status = 1;
 
-#if defined(CONFIG_LEDS_RT8547)
-	pin_eol_en = data->pin_torch_en;
-#elif defined(CONFIG_LEDS_S2MPB02)
-	if (data->eol_flash_type == EOL_FLASH) {
-		ALS_dbg("%s - flash gpio", __func__);
-		pin_eol_en = data->pin_flash_en;
-		eol_led_mode = S2MPB02_FLASH_LED_1;
-	} else {
-		ALS_dbg("%s - torch gpio", __func__);
+	if (data->use_rt8547) {
+#ifdef CONFIG_LEDS_RT8547
 		pin_eol_en = data->pin_torch_en;
-		eol_led_mode = S2MPB02_TORCH_LED_1;
-	}
 #endif
+	} else {
+#ifdef CONFIG_LEDS_S2MPB02
+		if (data->eol_flash_type == EOL_FLASH) {
+			ALS_dbg("%s - flash gpio", __func__);
+			pin_eol_en = data->pin_flash_en;
+			eol_led_mode = S2MPB02_FLASH_LED_1;
+		} else {
+			ALS_dbg("%s - torch gpio", __func__);
+			pin_eol_en = data->pin_torch_en;
+			eol_led_mode = S2MPB02_TORCH_LED_1;
+		}
+#endif
+	}
 
 	if (data->pwm == NULL || debug_pwm_duty > period_100) {
 		ret = gpio_request(pin_eol_en, NULL);
 		if (ret < 0)
 			return ret;
 
-#if defined(CONFIG_LEDS_RT8547)
-		led_curr = RT8547_MOVIE_CURRENT_25mA;
-#elif defined(CONFIG_LEDS_S2MPB02)
-		s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
-		
-		/* set min flash current */
-		if (data->eol_flash_type == EOL_FLASH) {
-			led_curr = S2MPB02_FLASH_OUT_I_150MA;
-		} else {
-			switch (ctx->deviceId) {
-				case AMS_TCS3407:
-				case AMS_TCS3407_UNTRIM:
-					led_curr = S2MPB02_TORCH_OUT_I_100MA;
-					break;
-				case AMS_TCS3408:
-				case AMS_TCS3408_UNTRIM:
-					led_curr = S2MPB02_TORCH_OUT_I_80MA;
-					break;
-				default:
-					led_curr = S2MPB02_TORCH_OUT_I_80MA;
-					break;
-			}
-		}
+		if (data->use_rt8547) {
+#ifdef CONFIG_LEDS_RT8547
+			led_curr = RT8547_MOVIE_CURRENT_25mA;
 #endif
+		} else {
+#ifdef CONFIG_LEDS_S2MPB02
+			s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
+
+			/* set min flash current */
+			if (data->eol_flash_type == EOL_FLASH) {
+				led_curr = S2MPB02_FLASH_OUT_I_150MA;
+			} else {
+				switch (ctx->deviceId) {
+					case AMS_TCS3407:
+					case AMS_TCS3407_UNTRIM:
+						led_curr = S2MPB02_TORCH_OUT_I_100MA;
+						break;
+					case AMS_TCS3408:
+					case AMS_TCS3408_UNTRIM:
+						led_curr = S2MPB02_TORCH_OUT_I_80MA;
+						break;
+					default:
+						led_curr = S2MPB02_TORCH_OUT_I_80MA;
+						break;
+				}
+			}
+#endif
+		}
 
 		ALS_dbg("%s - eol_loop start",__func__);
 		while (data->eol_state < EOL_STATE_DONE) {
@@ -2469,11 +2478,15 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 
 			if (data->eol_state >= EOL_STATE_100) {
 				if (curr_state != data->eol_state) {
-#if defined(CONFIG_LEDS_RT8547)
-					rt8547_led_set_torch(led_curr);
-#elif defined(CONFIG_LEDS_S2MPB02)
-					s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
+					if (data->use_rt8547) {
+#ifdef CONFIG_LEDS_RT8547
+						rt8547_led_set_torch(led_curr);
 #endif
+					} else {
+#ifdef CONFIG_LEDS_S2MPB02
+						s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
+#endif
+					}
 					curr_state = data->eol_state;
 				} else
 					gpio_direction_output(pin_eol_en, 1);
@@ -2487,11 +2500,15 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 			udelay(pulse_duty);
 		}
 		ALS_dbg("%s - eol loop end",__func__);
-#if defined(CONFIG_LEDS_RT8547)
-		rt8547_led_set_torch(-1);
-#elif defined(CONFIG_LEDS_S2MPB02)
-		s2mpb02_led_en(eol_led_mode, 0, S2MPB02_LED_TURN_WAY_GPIO);
+		if (data->use_rt8547) {
+#ifdef CONFIG_LEDS_RT8547
+			rt8547_led_set_torch(-1);
 #endif
+		} else {
+#ifdef CONFIG_LEDS_S2MPB02
+			s2mpb02_led_en(eol_led_mode, 0, S2MPB02_LED_TURN_WAY_GPIO);
+#endif
+		}
 		gpio_free(pin_eol_en);
 	} else {
 		ALS_dbg("%s - PWM torch set 0x%x 0x%x\n", __func__, data->pinctrl_pwm, data->pinctrl_out);
@@ -3090,6 +3107,8 @@ static int tcs3407_parse_dt(struct tcs3407_device_data *data)
 	if (data->pin_flash_en < 0) {
 		ALS_err("%s - get pin_flash_en error\n", __func__);
 	}
+
+	data->use_rt8547 = of_find_compatible_node(NULL, NULL, "rt8547") != NULL;
 #endif
 
 	if (of_property_read_string(dNode, "als_rear,vdd_1p8",

@@ -1023,6 +1023,7 @@ struct tcs3407_device_data {
 	u32 eol_icratio_spec[4];
 	s32 pin_torch_en;
 	s32 pin_flash_en;
+	bool use_rt8547;
 	struct pinctrl_state *pinctrl_pwm;
 	struct pinctrl_state *pinctrl_out;
 	struct pwm_device *pwm;
